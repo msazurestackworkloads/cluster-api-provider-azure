@@ -24,12 +24,12 @@ import (
 	. "github.com/onsi/gomega"
 	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/availabilityzones/mock_availabilityzones"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-12-01/compute"
+	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/compute/mgmt/compute"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/golang/mock/gomock"
 
-	network "github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-06-01/network"
+	network "github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/network/mgmt/network"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	infrav1 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
@@ -77,7 +77,7 @@ func TestGetAvailabilityZones(t *testing.T) {
 			availabilityZoneSpec: Spec{VMSize: to.StringPtr("Standard_B2ms")},
 			expectedError:        "",
 			expect: func(m *mock_availabilityzones.MockClientMockRecorder) {
-				m.ListComplete(context.TODO(), "location eq 'centralus'").Return(compute.ResourceSkusResultIterator{}, nil)
+				m.ListComplete(context.TODO()).Return(compute.ResourceSkusResultIterator{}, nil)
 			},
 		},
 		{
@@ -85,7 +85,7 @@ func TestGetAvailabilityZones(t *testing.T) {
 			availabilityZoneSpec: Spec{VMSize: to.StringPtr("Standard_B2ms")},
 			expectedError:        "#: Internal Server Error: StatusCode=500",
 			expect: func(m *mock_availabilityzones.MockClientMockRecorder) {
-				m.ListComplete(context.TODO(), "location eq 'centralus'").Return(compute.ResourceSkusResultIterator{}, autorest.NewErrorWithResponse("", "", &http.Response{StatusCode: 500}, "Internal Server Error"))
+				m.ListComplete(context.TODO()).Return(compute.ResourceSkusResultIterator{}, autorest.NewErrorWithResponse("", "", &http.Response{StatusCode: 500}, "Internal Server Error"))
 			},
 		},
 		{
@@ -93,7 +93,7 @@ func TestGetAvailabilityZones(t *testing.T) {
 			availabilityZoneSpec: Spec{VMSize: to.StringPtr("Standard_B2ms")},
 			expectedError:        "",
 			expect: func(m *mock_availabilityzones.MockClientMockRecorder) {
-				m.ListComplete(context.TODO(), "location eq 'centralus'").Return(compute.NewResourceSkusResultIterator(compute.ResourceSkusResultPage{}), nil)
+				m.ListComplete(context.TODO()).Return(compute.NewResourceSkusResultIterator(compute.ResourceSkusResultPage{}), nil)
 			},
 		},
 		{
@@ -101,7 +101,7 @@ func TestGetAvailabilityZones(t *testing.T) {
 			availabilityZoneSpec: Spec{},
 			expectedError:        "",
 			expect: func(m *mock_availabilityzones.MockClientMockRecorder) {
-				m.ListComplete(context.TODO(), "location eq 'centralus'").Return(compute.NewResourceSkusResultIterator(compute.ResourceSkusResultPage{}), nil)
+				m.ListComplete(context.TODO()).Return(compute.NewResourceSkusResultIterator(compute.ResourceSkusResultPage{}), nil)
 			},
 		},
 		{
@@ -109,7 +109,7 @@ func TestGetAvailabilityZones(t *testing.T) {
 			availabilityZoneSpec: Spec{},
 			expectedError:        "",
 			expect: func(m *mock_availabilityzones.MockClientMockRecorder) {
-				m.ListComplete(context.TODO(), "location eq 'centralus'").Return(compute.NewResourceSkusResultIterator(compute.ResourceSkusResultPage{}), nil)
+				m.ListComplete(context.TODO()).Return(compute.NewResourceSkusResultIterator(compute.ResourceSkusResultPage{}), nil)
 			},
 		},
 	}

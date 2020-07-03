@@ -20,7 +20,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-06-01/network"
+	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/network/mgmt/network"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/pkg/errors"
 	"k8s.io/klog"
@@ -85,12 +85,10 @@ func (s *Service) Reconcile(ctx context.Context, spec interface{}) error {
 					Name: &backEndAddressPoolName,
 				},
 			},
-			OutboundRules: &[]network.OutboundRule{
+			OutboundNatRules: &[]network.OutboundNatRule{
 				{
 					Name: to.StringPtr("OutboundNATAllProtocols"),
-					OutboundRulePropertiesFormat: &network.OutboundRulePropertiesFormat{
-						Protocol:             network.LoadBalancerOutboundRuleProtocolAll,
-						IdleTimeoutInMinutes: to.Int32Ptr(4),
+					OutboundNatRulePropertiesFormat: &network.OutboundNatRulePropertiesFormat{
 						FrontendIPConfigurations: &[]network.SubResource{
 							{
 								ID: to.StringPtr(fmt.Sprintf("/%s/%s/frontendIPConfigurations/%s", idPrefix, lbName, frontEndIPConfigName)),
@@ -130,7 +128,7 @@ func (s *Service) Reconcile(ctx context.Context, spec interface{}) error {
 					BackendPort:          to.Int32Ptr(s.Scope.APIServerPort()),
 					IdleTimeoutInMinutes: to.Int32Ptr(4),
 					EnableFloatingIP:     to.BoolPtr(false),
-					LoadDistribution:     network.LoadDistributionDefault,
+					LoadDistribution:     "Default",
 					FrontendIPConfiguration: &network.SubResource{
 						ID: to.StringPtr(fmt.Sprintf("/%s/%s/frontendIPConfigurations/%s", idPrefix, lbName, frontEndIPConfigName)),
 					},

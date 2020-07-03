@@ -18,11 +18,10 @@ package availabilityzones
 
 import (
 	"context"
-	"fmt"
 	"sort"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-12-01/compute"
+	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/compute/mgmt/compute"
 	"github.com/pkg/errors"
 )
 
@@ -39,10 +38,10 @@ func (s *Service) Get(ctx context.Context, spec interface{}) (interface{}, error
 		return zones, errors.New("invalid availability zones specification")
 	}
 
-	filter := fmt.Sprintf("location eq '%s'", s.Scope.Location())
+	// filter := fmt.Sprintf("location eq '%s'", s.Scope.Location())
 
 	// Prefer ListComplete() over List() to automatically traverse pages via iterator.
-	res, err := s.Client.ListComplete(ctx, filter)
+	res, err := s.Client.ListComplete(ctx)
 	if err != nil {
 		return zones, err
 	}

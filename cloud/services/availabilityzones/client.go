@@ -19,14 +19,14 @@ package availabilityzones
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-12-01/compute"
+	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/compute/mgmt/compute"
 	"github.com/Azure/go-autorest/autorest"
 	azure "sigs.k8s.io/cluster-api-provider-azure/cloud"
 )
 
 // Client wraps go-sdk
 type Client interface {
-	ListComplete(context.Context, string) (compute.ResourceSkusResultIterator, error)
+	ListComplete(context.Context) (compute.ResourceSkusResultIterator, error)
 }
 
 // AzureClient contains the Azure go-sdk Client
@@ -51,6 +51,6 @@ func newResourceSkusClient(subscriptionID string, baseURI string, authorizer aut
 }
 
 // ListComplete enumerates all values, automatically crossing page boundaries as required.
-func (ac *AzureClient) ListComplete(ctx context.Context, filter string) (compute.ResourceSkusResultIterator, error) {
-	return ac.resourceSkus.ListComplete(ctx, filter)
+func (ac *AzureClient) ListComplete(ctx context.Context) (compute.ResourceSkusResultIterator, error) {
+	return ac.resourceSkus.ListComplete(ctx)
 }

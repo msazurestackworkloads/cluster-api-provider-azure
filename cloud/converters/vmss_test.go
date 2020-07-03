@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/Azure/azure-sdk-for-go/profiles/latest/compute/mgmt/compute"
+	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/compute/mgmt/compute"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/onsi/gomega"
 
@@ -40,20 +40,20 @@ func Test_SDKToVMSS(t *testing.T) {
 				tags := map[string]*string{
 					"foo": to.StringPtr("bazz"),
 				}
-				zones := []string{"zone0", "zone1"}
+				// zones := []string{"zone0", "zone1"}
 				return compute.VirtualMachineScaleSet{
 						Sku: &compute.Sku{
 							Name:     to.StringPtr("skuName"),
 							Tier:     to.StringPtr("skuTier"),
 							Capacity: to.Int64Ptr(2),
 						},
-						Zones:    to.StringSlicePtr(zones),
+						// Zones:    to.StringSlicePtr(zones),
 						ID:       to.StringPtr("vmssID"),
 						Name:     to.StringPtr("vmssName"),
 						Location: to.StringPtr("westus2"),
 						Tags:     tags,
 						VirtualMachineScaleSetProperties: &compute.VirtualMachineScaleSetProperties{
-							ProvisioningState: to.StringPtr(string(compute.ProvisioningState1Succeeded)),
+							ProvisioningState: to.StringPtr("Succeded"),
 						},
 					},
 					[]compute.VirtualMachineScaleSetVM{
@@ -61,18 +61,18 @@ func Test_SDKToVMSS(t *testing.T) {
 							InstanceID: to.StringPtr("0"),
 							ID:         to.StringPtr("vm/0"),
 							Name:       to.StringPtr("vm0"),
-							Zones:      to.StringSlicePtr([]string{"zone0"}),
+							// Zones:      to.StringSlicePtr([]string{"zone0"}),
 							VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
-								ProvisioningState: to.StringPtr(string(compute.ProvisioningState1Succeeded)),
+								ProvisioningState: to.StringPtr("Succeeded"),
 							},
 						},
 						{
 							InstanceID: to.StringPtr("1"),
 							ID:         to.StringPtr("vm/1"),
 							Name:       to.StringPtr("vm1"),
-							Zones:      to.StringSlicePtr([]string{"zone1"}),
+							// Zones:      to.StringSlicePtr([]string{"zone1"}),
 							VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
-								ProvisioningState: to.StringPtr(string(compute.ProvisioningState1Succeeded)),
+								ProvisioningState: to.StringPtr("Succeeded"),
 							},
 						},
 					}
@@ -83,8 +83,8 @@ func Test_SDKToVMSS(t *testing.T) {
 					Name:     "vmssName",
 					Sku:      "skuName",
 					Capacity: 2,
-					Zones:    []string{"zone0", "zone1"},
-					State:    "Succeeded",
+					// Zones:    []string{"zone0", "zone1"},
+					State: "Succeeded",
 					Tags: map[string]string{
 						"foo": "bazz",
 					},

@@ -22,7 +22,7 @@ package mock_virtualmachines
 
 import (
 	context "context"
-	compute "github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-12-01/compute"
+	compute "github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/compute/mgmt/compute"
 	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
 )

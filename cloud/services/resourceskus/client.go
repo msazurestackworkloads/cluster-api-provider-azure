@@ -20,7 +20,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-12-01/compute"
+	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/compute/mgmt/compute"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/pkg/errors"
 
@@ -29,7 +29,7 @@ import (
 
 // Client wraps go-sdk
 type Client interface {
-	List(context.Context, string) ([]compute.ResourceSku, error)
+	List(context.Context) ([]compute.ResourceSku, error)
 	HasAcceleratedNetworking(context.Context, string) (bool, error)
 }
 
@@ -56,8 +56,8 @@ func newResourceSkusClient(subscriptionID string, baseURI string, authorizer aut
 }
 
 // List returns all Resource SKUs available to the subscription.
-func (ac *AzureClient) List(ctx context.Context, filter string) ([]compute.ResourceSku, error) {
-	iter, err := ac.skus.ListComplete(ctx, filter)
+func (ac *AzureClient) List(ctx context.Context) ([]compute.ResourceSku, error) {
+	iter, err := ac.skus.ListComplete(ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not list resource skus")
 	}
@@ -78,7 +78,7 @@ func (ac *AzureClient) HasAcceleratedNetworking(ctx context.Context, name string
 	if name == "" {
 		return false, nil
 	}
-	skus, err := ac.List(ctx, "") // "filter" argument only works for location, so filter in code
+	skus, err := ac.List(ctx) // "filter" argument only works for location, so filter in code
 	if err != nil {
 		return false, err
 	}
