@@ -20,7 +20,6 @@ import (
 	"encoding/base64"
 	"fmt"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-12-01/compute"
 	"golang.org/x/crypto/ssh"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 )
@@ -80,11 +79,12 @@ func validateStorageAccountType(storageAccountType string, fieldPath *field.Path
 		return allErrs
 	}
 
-	for _, possibleStorageAccountType := range compute.PossibleDiskStorageAccountTypesValues() {
+	possibleDiskStorageAccountTypesValues := []string{"Premium_LRS", "Standard_LRS", "StandardSSD_LRS", "UltraSSD_LRS"}
+	for _, possibleStorageAccountType := range possibleDiskStorageAccountTypesValues {
 		if string(possibleStorageAccountType) == storageAccountType {
 			return allErrs
 		}
 	}
-	allErrs = append(allErrs, field.Invalid(storageAccTypeChildPath, "", fmt.Sprintf("allowed values are %v", compute.PossibleDiskStorageAccountTypesValues())))
+	allErrs = append(allErrs, field.Invalid(storageAccTypeChildPath, "", fmt.Sprintf("allowed values are %v", possibleDiskStorageAccountTypesValues)))
 	return allErrs
 }
