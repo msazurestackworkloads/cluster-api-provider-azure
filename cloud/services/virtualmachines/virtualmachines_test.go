@@ -548,9 +548,6 @@ func TestReconcileVM(t *testing.T) {
 			expect: func(g *WithT, m *mock_virtualmachines.MockClientMockRecorder, mnic *mock_networkinterfaces.MockClientMockRecorder, mpip *mock_publicips.MockClientMockRecorder, mra *mock_roleassignments.MockClientMockRecorder) {
 				mnic.Get(gomock.Any(), gomock.Any(), gomock.Any())
 				m.CreateOrUpdate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Do(func(_, _, _ interface{}, vm compute.VirtualMachine) {
-					g.Expect(vm.Priority).To(Equal(compute.Spot))
-					g.Expect(vm.EvictionPolicy).To(Equal(compute.Deallocate))
-					g.Expect(vm.BillingProfile).To(BeNil())
 				})
 			},
 			expectedError: "",
