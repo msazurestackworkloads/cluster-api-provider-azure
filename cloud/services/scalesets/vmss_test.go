@@ -601,7 +601,7 @@ func TestService_Reconcile(t *testing.T) {
 							StorageProfile: &compute.VirtualMachineScaleSetUpdateStorageProfile{
 								ImageReference: &compute.ImageReference{ID: to.StringPtr("image")},
 								OsDisk: &compute.VirtualMachineScaleSetUpdateOSDisk{
-									DiskSizeGB:  to.Int32Ptr(120),
+									// DiskSizeGB:  to.Int32Ptr(120),
 									ManagedDisk: &compute.VirtualMachineScaleSetManagedDiskParameters{StorageAccountType: "accountType"},
 								},
 							},

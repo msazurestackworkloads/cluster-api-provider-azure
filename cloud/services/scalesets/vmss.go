@@ -19,6 +19,7 @@ package scalesets
 import (
 	"context"
 	"fmt"
+
 	infrav1exp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/compute/mgmt/compute"
@@ -224,7 +225,7 @@ func generateStorageProfile(vmssSpec Spec) (*compute.VirtualMachineScaleSetStora
 		OsDisk: &compute.VirtualMachineScaleSetOSDisk{
 			OsType:       compute.OperatingSystemTypes(vmssSpec.OSDisk.OSType),
 			CreateOption: compute.DiskCreateOptionTypesFromImage,
-			DiskSizeGB:   to.Int32Ptr(vmssSpec.OSDisk.DiskSizeGB),
+			// DiskSizeGB:   to.Int32Ptr(vmssSpec.OSDisk.DiskSizeGB),
 			ManagedDisk: &compute.VirtualMachineScaleSetManagedDiskParameters{
 				StorageAccountType: compute.StorageAccountTypes(vmssSpec.OSDisk.ManagedDisk.StorageAccountType),
 			},
