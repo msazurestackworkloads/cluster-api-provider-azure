@@ -30,9 +30,9 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/uuid"
 	"k8s.io/klog"
-	infrav1 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
-	azure "sigs.k8s.io/cluster-api-provider-azure/cloud"
-	"sigs.k8s.io/cluster-api-provider-azure/cloud/converters"
+	infrav1 "github.com/chlau-az/cluster-api-provider-azure/api/v1alpha3"
+	azure "github.com/chlau-az/cluster-api-provider-azure/cloud"
+	"github.com/chlau-az/cluster-api-provider-azure/cloud/converters"
 )
 
 const azureBuiltInContributorID = "b24988ac-6180-42a0-ab88-20f7382dd24c"

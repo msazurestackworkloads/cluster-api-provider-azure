@@ -26,18 +26,18 @@ import (
 
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1alpha3"
 
-	infrav1 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
-	azure "sigs.k8s.io/cluster-api-provider-azure/cloud"
-	"sigs.k8s.io/cluster-api-provider-azure/cloud/scope"
-	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/availabilityzones"
-	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/groups"
-	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/internalloadbalancers"
-	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/publicips"
-	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/publicloadbalancers"
-	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/routetables"
-	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/securitygroups"
-	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/subnets"
-	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/virtualnetworks"
+	infrav1 "github.com/chlau-az/cluster-api-provider-azure/api/v1alpha3"
+	azure "github.com/chlau-az/cluster-api-provider-azure/cloud"
+	"github.com/chlau-az/cluster-api-provider-azure/cloud/scope"
+	"github.com/chlau-az/cluster-api-provider-azure/cloud/services/availabilityzones"
+	"github.com/chlau-az/cluster-api-provider-azure/cloud/services/groups"
+	"github.com/chlau-az/cluster-api-provider-azure/cloud/services/internalloadbalancers"
+	"github.com/chlau-az/cluster-api-provider-azure/cloud/services/publicips"
+	"github.com/chlau-az/cluster-api-provider-azure/cloud/services/publicloadbalancers"
+	"github.com/chlau-az/cluster-api-provider-azure/cloud/services/routetables"
+	"github.com/chlau-az/cluster-api-provider-azure/cloud/services/securitygroups"
+	"github.com/chlau-az/cluster-api-provider-azure/cloud/services/subnets"
+	"github.com/chlau-az/cluster-api-provider-azure/cloud/services/virtualnetworks"
 )
 
 // azureClusterReconciler is the reconciler called by the AzureCluster controller

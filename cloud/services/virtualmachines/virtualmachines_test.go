@@ -22,10 +22,10 @@ import (
 	"testing"
 
 	. "github.com/onsi/gomega"
-	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/networkinterfaces/mock_networkinterfaces"
-	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/publicips/mock_publicips"
-	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/roleassignments/mock_roleassignments"
-	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/virtualmachines/mock_virtualmachines"
+	"github.com/chlau-az/cluster-api-provider-azure/cloud/services/networkinterfaces/mock_networkinterfaces"
+	"github.com/chlau-az/cluster-api-provider-azure/cloud/services/publicips/mock_publicips"
+	"github.com/chlau-az/cluster-api-provider-azure/cloud/services/roleassignments/mock_roleassignments"
+	"github.com/chlau-az/cluster-api-provider-azure/cloud/services/virtualmachines/mock_virtualmachines"
 
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -36,8 +36,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
-	infrav1 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
-	"sigs.k8s.io/cluster-api-provider-azure/cloud/scope"
+	infrav1 "github.com/chlau-az/cluster-api-provider-azure/api/v1alpha3"
+	"github.com/chlau-az/cluster-api-provider-azure/cloud/scope"
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 )

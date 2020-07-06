@@ -35,14 +35,14 @@ import (
 	clusterv1exp "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
-	infrav1 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
-	azure "sigs.k8s.io/cluster-api-provider-azure/cloud"
-	"sigs.k8s.io/cluster-api-provider-azure/cloud/scope"
-	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/publicloadbalancers/mock_publicloadbalancers"
-	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/resourceskus/mock_resourceskus"
-	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/scalesets/mock_scalesets"
-	infrav1exp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
-	"sigs.k8s.io/cluster-api-provider-azure/internal/test/matchers"
+	infrav1 "github.com/chlau-az/cluster-api-provider-azure/api/v1alpha3"
+	azure "github.com/chlau-az/cluster-api-provider-azure/cloud"
+	"github.com/chlau-az/cluster-api-provider-azure/cloud/scope"
+	"github.com/chlau-az/cluster-api-provider-azure/cloud/services/publicloadbalancers/mock_publicloadbalancers"
+	"github.com/chlau-az/cluster-api-provider-azure/cloud/services/resourceskus/mock_resourceskus"
+	"github.com/chlau-az/cluster-api-provider-azure/cloud/services/scalesets/mock_scalesets"
+	infrav1exp "github.com/chlau-az/cluster-api-provider-azure/exp/api/v1alpha3"
+	"github.com/chlau-az/cluster-api-provider-azure/internal/test/matchers"
 )
 
 func init() {

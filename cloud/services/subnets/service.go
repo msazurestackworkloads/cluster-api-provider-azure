@@ -17,9 +17,9 @@ limitations under the License.
 package subnets
 
 import (
-	"sigs.k8s.io/cluster-api-provider-azure/cloud/scope"
-	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/routetables"
-	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/securitygroups"
+	"github.com/chlau-az/cluster-api-provider-azure/cloud/scope"
+	"github.com/chlau-az/cluster-api-provider-azure/cloud/services/routetables"
+	"github.com/chlau-az/cluster-api-provider-azure/cloud/services/securitygroups"
 )
 
 // Service provides operations on azure resources

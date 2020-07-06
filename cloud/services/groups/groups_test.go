@@ -22,7 +22,7 @@ import (
 	"testing"
 
 	. "github.com/onsi/gomega"
-	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/groups/mock_groups"
+	"github.com/chlau-az/cluster-api-provider-azure/cloud/services/groups/mock_groups"
 
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/golang/mock/gomock"
@@ -30,9 +30,9 @@ import (
 	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/resources/mgmt/resources"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
-	infrav1 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
-	"sigs.k8s.io/cluster-api-provider-azure/cloud/converters"
-	"sigs.k8s.io/cluster-api-provider-azure/cloud/scope"
+	infrav1 "github.com/chlau-az/cluster-api-provider-azure/api/v1alpha3"
+	"github.com/chlau-az/cluster-api-provider-azure/cloud/converters"
+	"github.com/chlau-az/cluster-api-provider-azure/cloud/scope"
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 )

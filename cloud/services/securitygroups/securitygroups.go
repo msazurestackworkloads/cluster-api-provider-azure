@@ -25,7 +25,7 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/pkg/errors"
 	"k8s.io/klog"
-	azure "sigs.k8s.io/cluster-api-provider-azure/cloud"
+	azure "github.com/chlau-az/cluster-api-provider-azure/cloud"
 )
 
 const (

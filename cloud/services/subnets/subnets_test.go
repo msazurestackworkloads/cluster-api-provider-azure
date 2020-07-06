@@ -22,9 +22,9 @@ import (
 	"testing"
 
 	. "github.com/onsi/gomega"
-	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/routetables/mock_routetables"
-	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/securitygroups/mock_securitygroups"
-	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/subnets/mock_subnets"
+	"github.com/chlau-az/cluster-api-provider-azure/cloud/services/routetables/mock_routetables"
+	"github.com/chlau-az/cluster-api-provider-azure/cloud/services/securitygroups/mock_securitygroups"
+	"github.com/chlau-az/cluster-api-provider-azure/cloud/services/subnets/mock_subnets"
 
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -33,8 +33,8 @@ import (
 	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/network/mgmt/network"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
-	infrav1 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
-	"sigs.k8s.io/cluster-api-provider-azure/cloud/scope"
+	infrav1 "github.com/chlau-az/cluster-api-provider-azure/api/v1alpha3"
+	"github.com/chlau-az/cluster-api-provider-azure/cloud/scope"
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 )

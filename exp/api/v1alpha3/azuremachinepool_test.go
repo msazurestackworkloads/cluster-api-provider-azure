@@ -21,8 +21,8 @@ import (
 
 	"github.com/onsi/gomega"
 
-	infrav1 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
-	exp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
+	infrav1 "github.com/chlau-az/cluster-api-provider-azure/api/v1alpha3"
+	exp "github.com/chlau-az/cluster-api-provider-azure/exp/api/v1alpha3"
 )
 
 func TestAzureMachinePool_Validate(t *testing.T) {

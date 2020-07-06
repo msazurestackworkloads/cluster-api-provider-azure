@@ -28,9 +28,9 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	infrav1 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
-	"sigs.k8s.io/cluster-api-provider-azure/internal/test"
-	"sigs.k8s.io/cluster-api-provider-azure/internal/test/record"
+	infrav1 "github.com/chlau-az/cluster-api-provider-azure/api/v1alpha3"
+	"github.com/chlau-az/cluster-api-provider-azure/internal/test"
+	"github.com/chlau-az/cluster-api-provider-azure/internal/test/record"
 )
 
 var _ = Describe("AzureMachineReconciler", func() {

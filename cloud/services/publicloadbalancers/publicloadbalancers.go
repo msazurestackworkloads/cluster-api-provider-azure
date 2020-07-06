@@ -19,14 +19,15 @@ package publicloadbalancers
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/network/mgmt/network"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/pkg/errors"
 	"k8s.io/klog"
-	infrav1 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
-	azure "sigs.k8s.io/cluster-api-provider-azure/cloud"
-	"sigs.k8s.io/cluster-api-provider-azure/cloud/converters"
+	infrav1 "github.com/chlau-az/cluster-api-provider-azure/api/v1alpha3"
+	azure "github.com/chlau-az/cluster-api-provider-azure/cloud"
+	"github.com/chlau-az/cluster-api-provider-azure/cloud/converters"
 )
 
 // Spec specification for public load balancer
@@ -60,6 +61,7 @@ func (s *Service) Reconcile(ctx context.Context, spec interface{}) error {
 		return errors.Wrap(err, "failed to look for existing public IP")
 	}
 	klog.V(2).Infof("successfully got public ip %s", publicLBSpec.PublicIPName)
+	log.Println("HI HERE RECONCILING")
 
 	lb := network.LoadBalancer{
 		Sku:      &network.LoadBalancerSku{Name: network.LoadBalancerSkuNameStandard},
@@ -146,10 +148,12 @@ func (s *Service) Reconcile(ctx context.Context, spec interface{}) error {
 	err = s.Client.CreateOrUpdate(ctx, s.Scope.ResourceGroup(), lbName, lb)
 
 	if err != nil {
+		log.Println("cannot create public load balancer")
 		return errors.Wrap(err, "cannot create public load balancer")
 	}
 
 	klog.V(2).Infof("successfully created public load balancer %s", lbName)
+	log.Println("sucessfully created public load balancer")
 	return nil
 }
 

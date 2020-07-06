@@ -21,8 +21,8 @@ import (
 
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/pkg/errors"
-	"sigs.k8s.io/cluster-api-provider-azure/cloud/scope"
-	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/virtualmachines"
+	"github.com/chlau-az/cluster-api-provider-azure/cloud/scope"
+	"github.com/chlau-az/cluster-api-provider-azure/cloud/services/virtualmachines"
 )
 
 const (

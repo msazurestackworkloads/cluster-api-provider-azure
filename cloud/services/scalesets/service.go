@@ -16,9 +16,9 @@ limitations under the License.
 package scalesets
 
 import (
-	azure "sigs.k8s.io/cluster-api-provider-azure/cloud"
-	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/publicloadbalancers"
-	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/resourceskus"
+	azure "github.com/chlau-az/cluster-api-provider-azure/cloud"
+	"github.com/chlau-az/cluster-api-provider-azure/cloud/services/publicloadbalancers"
+	"github.com/chlau-az/cluster-api-provider-azure/cloud/services/resourceskus"
 )
 
 // Service provides operations on azure resources

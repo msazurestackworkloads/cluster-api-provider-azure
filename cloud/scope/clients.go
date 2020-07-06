@@ -17,9 +17,12 @@ limitations under the License.
 package scope
 
 import (
+	"log"
 	"os"
 
 	"github.com/Azure/go-autorest/autorest"
+	"github.com/Azure/go-autorest/autorest/adal"
+	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/pkg/errors"
 )
@@ -38,6 +41,9 @@ const (
 // AzureClients contains all the Azure clients used by the scopes.
 type AzureClients struct {
 	SubscriptionID             string
+	ClientID                   string
+	ClientSecret               string
+	TenantID                   string
 	ResourceManagerEndpoint    string
 	ResourceManagerVMDNSSuffix string
 	Authorizer                 autorest.Authorizer
@@ -49,14 +55,27 @@ func (c *AzureClients) setCredentials(subscriptionID string) error {
 		return err
 	}
 	c.SubscriptionID = subID
+	c.ClientID = os.Getenv("AZURE_CLIENT_ID")
+	c.ClientSecret = os.Getenv("AZURE_CLIENT_SECRET")
+	c.TenantID = os.Getenv("AZURE_TENANT_ID")
 	settings, err := auth.GetSettingsFromEnvironment()
 	if err != nil {
 		return err
 	}
+
+	// To do: get arm endpoint in helper method
+	log.Println("HERE changing environment")
+	armEndpoint := os.Getenv("AZURE_ARM_ENDPOINT")
+	log.Println("HERE armEndpoint: ", armEndpoint)
+	settings.Environment, _ = azure.EnvironmentFromURL(armEndpoint)
+
 	c.ResourceManagerEndpoint = settings.Environment.ResourceManagerEndpoint
+	log.Println("HERE resource manager endpoint: ", c.ResourceManagerEndpoint)
 	c.ResourceManagerVMDNSSuffix = GetAzureDNSZoneForEnvironment(settings.Environment.Name)
 	settings.Values[auth.SubscriptionID] = subscriptionID
-	c.Authorizer, err = settings.GetAuthorizer()
+	// c.Authorizer, err = settings.GetAuthorizer()
+	c.Authorizer, err = c.getAuthorizerForResource(settings.Environment)
+	log.Println("HERE c.Authorizer: ", c.Authorizer, "err: ", err)
 	return err
 }
 
@@ -87,4 +106,31 @@ func GetAzureDNSZoneForEnvironment(environmentName string) string {
 	default:
 		return "cloudapp.azure.com"
 	}
+}
+
+// getAuthorizerForResource gets an OAuthTokenAuthorizer for Azure Resource Manager
+func (c *AzureClients) getAuthorizerForResource(env azure.Environment) (autorest.Authorizer, error) {
+	var a autorest.Authorizer
+	var err error
+	var oauthConfig *adal.OAuthConfig
+
+	tokenAudience := env.TokenAudience
+	log.Println("HERE TokenAudience: ", env.TokenAudience)
+	log.Println("HERE ActiveDirectoryEndpoint: ", env.ActiveDirectoryEndpoint)
+	oauthConfig, err = adal.NewOAuthConfig(
+		env.ActiveDirectoryEndpoint, c.TenantID)
+
+	if err != nil {
+		return nil, err
+	}
+	token, err := adal.NewServicePrincipalToken(
+		*oauthConfig,
+		c.ClientID,
+		c.ClientSecret,
+		tokenAudience)
+
+	log.Println("HERE generated token")
+	a = autorest.NewBearerAuthorizer(token)
+	log.Println("HERE generated authorizer")
+	return a, err
 }

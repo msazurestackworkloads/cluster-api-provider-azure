@@ -25,8 +25,8 @@ import (
 	"github.com/pkg/errors"
 	"k8s.io/klog"
 
-	infrav1 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
-	azure "sigs.k8s.io/cluster-api-provider-azure/cloud"
+	infrav1 "github.com/chlau-az/cluster-api-provider-azure/api/v1alpha3"
+	azure "github.com/chlau-az/cluster-api-provider-azure/cloud"
 )
 
 // Spec input specification for Get/CreateOrUpdate/Delete calls

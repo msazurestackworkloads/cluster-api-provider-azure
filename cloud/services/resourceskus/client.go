@@ -24,7 +24,7 @@ import (
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/pkg/errors"
 
-	azure "sigs.k8s.io/cluster-api-provider-azure/cloud"
+	azure "github.com/chlau-az/cluster-api-provider-azure/cloud"
 )
 
 // Client wraps go-sdk

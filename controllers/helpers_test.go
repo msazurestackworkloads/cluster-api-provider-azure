@@ -29,8 +29,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 
-	infrav1 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
-	"sigs.k8s.io/cluster-api-provider-azure/internal/test/mock_log"
+	infrav1 "github.com/chlau-az/cluster-api-provider-azure/api/v1alpha3"
+	"github.com/chlau-az/cluster-api-provider-azure/internal/test/mock_log"
 )
 
 func TestAzureClusterToAzureMachinesMapper(t *testing.T) {

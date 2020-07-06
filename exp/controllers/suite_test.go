@@ -33,8 +33,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
-	infrav1 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
-	infrav1exp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
+	infrav1 "github.com/chlau-az/cluster-api-provider-azure/api/v1alpha3"
+	infrav1exp "github.com/chlau-az/cluster-api-provider-azure/exp/api/v1alpha3"
 	// +kubebuilder:scaffold:imports
 )
 
