@@ -19,7 +19,6 @@ package publicloadbalancers
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/network/mgmt/network"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -147,12 +146,10 @@ func (s *Service) Reconcile(ctx context.Context, spec interface{}) error {
 	err = s.Client.CreateOrUpdate(ctx, s.Scope.ResourceGroup(), lbName, lb)
 
 	if err != nil {
-		log.Println("cannot create public load balancer")
 		return errors.Wrap(err, "cannot create public load balancer")
 	}
 
 	klog.V(2).Infof("successfully created public load balancer %s", lbName)
-	log.Println("sucessfully created public load balancer")
 	return nil
 }
 

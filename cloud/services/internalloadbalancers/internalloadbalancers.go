@@ -19,7 +19,6 @@ package internalloadbalancers
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/network/mgmt/network"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -60,7 +59,6 @@ func (s *Service) Reconcile(ctx context.Context, spec interface{}) error {
 		}
 	} else if azure.ResourceNotFound(err) {
 		klog.V(2).Infof("internalLB %s not found in RG %s", internalLBSpec.Name, s.Scope.ResourceGroup())
-		log.Println("HERE getting resource internal lb not found")
 		privateIP = "10.0.0.100"
 		/*
 			privateIP, err = s.getAvailablePrivateIP(ctx, s.Scope.Vnet().ResourceGroup, internalLBSpec.VnetName, internalLBSpec.SubnetCidr, internalLBSpec.IPAddress)

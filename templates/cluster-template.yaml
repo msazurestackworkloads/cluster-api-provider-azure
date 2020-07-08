@@ -112,8 +112,12 @@ metadata:
 spec:
   template:
     spec:
-      # image: 
-      #   id: https://capi1593538393.blob.core.windows.net/system/Microsoft.Compute/Images/cluster-api-vhds/capi-1593538415-osDisk.c4fa6c28-d876-443c-8415-b321dae95b44.vhd?st=2020-06-29T00%3A00Z&se=2021-06-30T00%3A00Z&sp=rl&sv=2018-11-09&sr=c&sig=y4S1vjKbexw1iMsyr0oK9SksIiLmBIpUD48j9n%2BoIaY%3D
+      image: 
+        marketplace: 
+          publisher: Canonical
+          offer: UbuntuServer
+          sku: 16.04-LTS
+          version: latest
       location: ${AZURE_LOCATION}
       osDisk:
         diskSizeGB: 128
