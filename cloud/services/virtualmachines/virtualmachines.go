@@ -26,13 +26,13 @@ import (
 	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/authorization/mgmt/authorization"
 	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/compute/mgmt/compute"
 	"github.com/Azure/go-autorest/autorest/to"
+	infrav1 "github.com/chlau-az/cluster-api-provider-azure/api/v1alpha3"
+	azure "github.com/chlau-az/cluster-api-provider-azure/cloud"
+	"github.com/chlau-az/cluster-api-provider-azure/cloud/converters"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/uuid"
 	"k8s.io/klog"
-	infrav1 "github.com/chlau-az/cluster-api-provider-azure/api/v1alpha3"
-	azure "github.com/chlau-az/cluster-api-provider-azure/cloud"
-	"github.com/chlau-az/cluster-api-provider-azure/cloud/converters"
 )
 
 const azureBuiltInContributorID = "b24988ac-6180-42a0-ab88-20f7382dd24c"

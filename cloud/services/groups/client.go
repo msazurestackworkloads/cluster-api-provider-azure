@@ -18,7 +18,6 @@ package groups
 
 import (
 	"context"
-	"log"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/resources/mgmt/resources"
 	"github.com/Azure/go-autorest/autorest"
@@ -47,7 +46,6 @@ func NewClient(auth azure.Authorizer) *AzureClient {
 
 // newGroupsClient creates a new groups client from subscription ID.
 func newGroupsClient(subscriptionID string, baseURI string, authorizer autorest.Authorizer) resources.GroupsClient {
-	log.Println("HERE creating new group client with baseuri")
 	groupsClient := resources.NewGroupsClientWithBaseURI(baseURI, subscriptionID)
 	groupsClient.Authorizer = authorizer
 	groupsClient.AddToUserAgent(azure.UserAgent())

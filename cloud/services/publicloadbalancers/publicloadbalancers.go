@@ -23,11 +23,11 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/network/mgmt/network"
 	"github.com/Azure/go-autorest/autorest/to"
-	"github.com/pkg/errors"
-	"k8s.io/klog"
 	infrav1 "github.com/chlau-az/cluster-api-provider-azure/api/v1alpha3"
 	azure "github.com/chlau-az/cluster-api-provider-azure/cloud"
 	"github.com/chlau-az/cluster-api-provider-azure/cloud/converters"
+	"github.com/pkg/errors"
+	"k8s.io/klog"
 )
 
 // Spec specification for public load balancer
@@ -61,10 +61,9 @@ func (s *Service) Reconcile(ctx context.Context, spec interface{}) error {
 		return errors.Wrap(err, "failed to look for existing public IP")
 	}
 	klog.V(2).Infof("successfully got public ip %s", publicLBSpec.PublicIPName)
-	log.Println("HI HERE RECONCILING")
 
 	lb := network.LoadBalancer{
-		Sku:      &network.LoadBalancerSku{Name: network.LoadBalancerSkuNameStandard},
+		Sku:      &network.LoadBalancerSku{Name: network.LoadBalancerSkuNameBasic},
 		Location: to.StringPtr(s.Scope.Location()),
 		Tags: converters.TagsToMap(infrav1.Build(infrav1.BuildParams{
 			ClusterName: s.Scope.ClusterName(),

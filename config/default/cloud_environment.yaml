@@ -5,3 +5,4 @@ metadata:
   namespace: system
 data:
   cloud-env: ${AZURE_ENVIRONMENT}
+  cloud-arm-endpoint: ${AZURE_ARM_ENDPOINT}

@@ -19,14 +19,13 @@ package scope
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/Azure/go-autorest/autorest"
+	infrav1 "github.com/chlau-az/cluster-api-provider-azure/api/v1alpha3"
+	azure "github.com/chlau-az/cluster-api-provider-azure/cloud"
 	"github.com/go-logr/logr"
 	"github.com/pkg/errors"
 	"k8s.io/klog/klogr"
-	infrav1 "github.com/chlau-az/cluster-api-provider-azure/api/v1alpha3"
-	azure "github.com/chlau-az/cluster-api-provider-azure/cloud"
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	"sigs.k8s.io/cluster-api/util/patch"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -93,7 +92,6 @@ func (s *ClusterScope) SubscriptionID() string {
 
 // BaseURI returns the Azure ResourceManagerEndpoint.
 func (s *ClusterScope) BaseURI() string {
-	log.Println("HERE BaseURI s.ResourceManagerEndpoint: ", s.ResourceManagerEndpoint)
 	return s.ResourceManagerEndpoint
 }
 

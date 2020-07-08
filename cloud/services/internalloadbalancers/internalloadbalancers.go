@@ -19,13 +19,14 @@ package internalloadbalancers
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/network/mgmt/network"
 	"github.com/Azure/go-autorest/autorest/to"
-	"github.com/pkg/errors"
-	"k8s.io/klog"
 	infrav1 "github.com/chlau-az/cluster-api-provider-azure/api/v1alpha3"
 	azure "github.com/chlau-az/cluster-api-provider-azure/cloud"
+	"github.com/pkg/errors"
+	"k8s.io/klog"
 )
 
 // Spec specification for internal load balancer
@@ -44,7 +45,7 @@ func (s *Service) Reconcile(ctx context.Context, spec interface{}) error {
 		return errors.New("invalid internal load balancer specification")
 	}
 	klog.V(2).Infof("creating internal load balancer %s", internalLBSpec.Name)
-	probeName := "HTTPSProbe"
+	// probeName := "HTTPSProbe"
 	frontEndIPConfigName := "controlplane-internal-lbFrontEnd"
 	backEndAddressPoolName := "controlplane-internal-backEndPool"
 	idPrefix := fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/loadBalancers", s.Scope.SubscriptionID(), s.Scope.ResourceGroup())
@@ -59,10 +60,14 @@ func (s *Service) Reconcile(ctx context.Context, spec interface{}) error {
 		}
 	} else if azure.ResourceNotFound(err) {
 		klog.V(2).Infof("internalLB %s not found in RG %s", internalLBSpec.Name, s.Scope.ResourceGroup())
-		privateIP, err = s.getAvailablePrivateIP(ctx, s.Scope.Vnet().ResourceGroup, internalLBSpec.VnetName, internalLBSpec.SubnetCidr, internalLBSpec.IPAddress)
-		if err != nil {
-			return err
-		}
+		log.Println("HERE getting resource internal lb not found")
+		privateIP = "10.0.0.100"
+		/*
+			privateIP, err = s.getAvailablePrivateIP(ctx, s.Scope.Vnet().ResourceGroup, internalLBSpec.VnetName, internalLBSpec.SubnetCidr, internalLBSpec.IPAddress)
+			if err != nil {
+				return err
+			}
+		*/
 		klog.V(2).Infof("setting internal load balancer IP to %s", privateIP)
 	} else {
 		return errors.Wrap(err, "failed to look for existing internal LB")
@@ -81,7 +86,8 @@ func (s *Service) Reconcile(ctx context.Context, spec interface{}) error {
 		s.Scope.ResourceGroup(),
 		lbName,
 		network.LoadBalancer{
-			Sku:      &network.LoadBalancerSku{Name: network.LoadBalancerSkuNameStandard},
+			Sku: &network.LoadBalancerSku{Name: network.LoadBalancerSkuNameBasic},
+			// Sku:      &network.LoadBalancerSku{Name: network.LoadBalancerSkuNameStandard},
 			Location: to.StringPtr(s.Scope.Location()),
 			LoadBalancerPropertiesFormat: &network.LoadBalancerPropertiesFormat{
 				FrontendIPConfigurations: &[]network.FrontendIPConfiguration{
@@ -99,18 +105,20 @@ func (s *Service) Reconcile(ctx context.Context, spec interface{}) error {
 						Name: &backEndAddressPoolName,
 					},
 				},
-				Probes: &[]network.Probe{
-					{
-						Name: &probeName,
-						ProbePropertiesFormat: &network.ProbePropertiesFormat{
-							Protocol:          "Https",
-							RequestPath:       to.StringPtr("/healthz"),
-							Port:              to.Int32Ptr(s.Scope.APIServerPort()),
-							IntervalInSeconds: to.Int32Ptr(15),
-							NumberOfProbes:    to.Int32Ptr(4),
+				/*
+					Probes: &[]network.Probe{
+						{
+							Name: &probeName,
+							ProbePropertiesFormat: &network.ProbePropertiesFormat{
+								Protocol:          "Http",
+								RequestPath:       to.StringPtr("/healthz"),
+								Port:              to.Int32Ptr(s.Scope.APIServerPort()),
+								IntervalInSeconds: to.Int32Ptr(15),
+								NumberOfProbes:    to.Int32Ptr(4),
+							},
 						},
 					},
-				},
+				*/
 				LoadBalancingRules: &[]network.LoadBalancingRule{
 					{
 						Name: to.StringPtr("LBRuleHTTPS"),
@@ -127,9 +135,11 @@ func (s *Service) Reconcile(ctx context.Context, spec interface{}) error {
 							BackendAddressPool: &network.SubResource{
 								ID: to.StringPtr(fmt.Sprintf("/%s/%s/backendAddressPools/%s", idPrefix, lbName, backEndAddressPoolName)),
 							},
-							Probe: &network.SubResource{
-								ID: to.StringPtr(fmt.Sprintf("/%s/%s/probes/%s", idPrefix, lbName, probeName)),
-							},
+							/*
+								Probe: &network.SubResource{
+									ID: to.StringPtr(fmt.Sprintf("/%s/%s/probes/%s", idPrefix, lbName, probeName)),
+								},
+							*/
 						},
 					},
 				},

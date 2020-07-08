@@ -22,9 +22,9 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/network/mgmt/network"
 	"github.com/Azure/go-autorest/autorest/to"
+	azure "github.com/chlau-az/cluster-api-provider-azure/cloud"
 	"github.com/pkg/errors"
 	"k8s.io/klog"
-	azure "github.com/chlau-az/cluster-api-provider-azure/cloud"
 )
 
 // Reconcile gets/creates/updates a public ip.
@@ -37,7 +37,7 @@ func (s *Service) Reconcile(ctx context.Context) error {
 			s.Scope.ResourceGroup(),
 			ip.Name,
 			network.PublicIPAddress{
-				Sku:      &network.PublicIPAddressSku{Name: network.PublicIPAddressSkuNameStandard},
+				Sku:      &network.PublicIPAddressSku{Name: network.PublicIPAddressSkuNameBasic},
 				Name:     to.StringPtr(ip.Name),
 				Location: to.StringPtr(s.Scope.Location()),
 				PublicIPAddressPropertiesFormat: &network.PublicIPAddressPropertiesFormat{

@@ -58,23 +58,27 @@ func (c *AzureClients) setCredentials(subscriptionID string) error {
 	c.ClientID = os.Getenv("AZURE_CLIENT_ID")
 	c.ClientSecret = os.Getenv("AZURE_CLIENT_SECRET")
 	c.TenantID = os.Getenv("AZURE_TENANT_ID")
+	log.Println("HERE client id: ", c.ClientID)
+	log.Println("HERE client secret: ", c.ClientSecret)
+	log.Println("HERE tenant id: ", c.TenantID)
+	log.Println("HERE subscription id: ", subID)
 	settings, err := auth.GetSettingsFromEnvironment()
 	if err != nil {
 		return err
 	}
 
 	// To do: get arm endpoint in helper method
-	log.Println("HERE changing environment")
 	armEndpoint := os.Getenv("AZURE_ARM_ENDPOINT")
-	log.Println("HERE armEndpoint: ", armEndpoint)
 	settings.Environment, _ = azure.EnvironmentFromURL(armEndpoint)
 
 	c.ResourceManagerEndpoint = settings.Environment.ResourceManagerEndpoint
-	log.Println("HERE resource manager endpoint: ", c.ResourceManagerEndpoint)
 	c.ResourceManagerVMDNSSuffix = GetAzureDNSZoneForEnvironment(settings.Environment.Name)
 	settings.Values[auth.SubscriptionID] = subscriptionID
 	// c.Authorizer, err = settings.GetAuthorizer()
 	c.Authorizer, err = c.getAuthorizerForResource(settings.Environment)
+
+	log.Println("HERE armEndpoint: ", armEndpoint)
+	log.Println("HERE resource manager endpoint: ", c.ResourceManagerEndpoint)
 	log.Println("HERE c.Authorizer: ", c.Authorizer, "err: ", err)
 	return err
 }
