@@ -21,6 +21,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/authorization/mgmt/authorization"
@@ -198,6 +199,7 @@ func (s *Service) Reconcile(ctx context.Context, spec interface{}) error {
 		*/
 	}
 
+	log.Println("HI CREATING VM")
 	err = s.Client.CreateOrUpdate(
 		ctx,
 		s.Scope.ResourceGroup(),
@@ -351,6 +353,10 @@ func generateStorageProfile(vmSpec Spec) (*compute.StorageProfile, error) {
 		},
 	}
 
+	log.Println("HI GENERATING STORAGE PROFILE")
+	log.Println("HI publisher: ", vmSpec.Image.Marketplace.Publisher)
+	log.Println("HI offer: ", vmSpec.Image.Marketplace.Offer)
+	log.Println("HI sku: ", vmSpec.Image.Marketplace.SKU)
 	imageRef, err := converters.ImageToSDK(vmSpec.Image)
 	if err != nil {
 		return nil, err
