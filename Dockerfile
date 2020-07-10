@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # Build the manager binary
-FROM golang:1.13.8 as builder
+FROM golang:1.14 as builder
 WORKDIR /workspace
 
 # Run this with docker build --build_arg $(go env GOPROXY) to override the goproxy
@@ -22,7 +22,7 @@ ENV GOPROXY=$goproxy
 
 # Copy the Go Modules manifests
 COPY go.mod go.mod
-COPY go.sum go.sum
+# COPY go.sum go.sum
 # Cache deps before building and copying source so that we don't need to re-download as much
 # and so that source changes don't invalidate our downloaded layer
 RUN go mod download
@@ -36,9 +36,13 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=${ARCH} \
     go build -a -ldflags '-extldflags "-static"' \
     -o manager .
 
+COPY azs.crt /usr/local/share/ca-certificates/
+RUN update-ca-certificates
+
 # Copy the controller-manager into a thin image
 FROM gcr.io/distroless/static:latest
 WORKDIR /
+COPY --from=builder /etc/ssl/certs /etc/ssl/certs
 COPY --from=builder /workspace/manager .
 USER nobody
 ENTRYPOINT ["/manager"]

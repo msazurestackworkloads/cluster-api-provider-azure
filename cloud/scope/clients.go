@@ -50,35 +50,70 @@ type AzureClients struct {
 }
 
 func (c *AzureClients) setCredentials(subscriptionID string) error {
+	// log.Println("HI PRINTING DIRECTORY")
+	// // DIR
+	// files, er := ioutil.ReadDir("/etc/ssl/certs")
+	// if er != nil {
+	// 	log.Fatal(er)
+	// }
+	// for _, f := range files {
+	// 	log.Println(f.Name())
+	// }
+	// log.Println("HI finished printing directory")
+
+	// // CURL
+	// resp, er := http.Get("https://management.redmond.ext-n31r1203.masd.stbtest.microsoft.com/metadata/endpoints?api-version=2015-01-01")
+	// if er != nil {
+	// 	log.Printf("HI ERROR: %s", er)
+	// }
+	// defer resp.Body.Close()
+	// body, er := ioutil.ReadAll(resp.Body)
+	// log.Println(string(body))
+
+	// log.Println("HI finished curling")
+
 	subID, err := getSubscriptionID(subscriptionID)
 	if err != nil {
 		return err
 	}
 	c.SubscriptionID = subID
+
+	c.ClientID = "huey"
+	c.ClientSecret = "dewey"
+	c.TenantID = "louie"
+	log.Println("HERE 0client id: ", c.ClientID)
+	log.Println("HERE 0client secret: ", c.ClientSecret)
+	log.Println("HERE 0tenant id: ", c.TenantID)
+	log.Println("HERE 0subscription id: ", c.SubscriptionID)
+
 	c.ClientID = os.Getenv("AZURE_CLIENT_ID")
 	c.ClientSecret = os.Getenv("AZURE_CLIENT_SECRET")
 	c.TenantID = os.Getenv("AZURE_TENANT_ID")
 	log.Println("HERE client id: ", c.ClientID)
 	log.Println("HERE client secret: ", c.ClientSecret)
 	log.Println("HERE tenant id: ", c.TenantID)
-	log.Println("HERE subscription id: ", subID)
+	log.Println("HERE subscription id: ", c.SubscriptionID)
 	settings, err := auth.GetSettingsFromEnvironment()
 	if err != nil {
-		return err
+		log.Println("HERE couldn't find environment")
+		// return err
 	}
 
 	// To do: get arm endpoint in helper method
 	armEndpoint := os.Getenv("AZURE_ARM_ENDPOINT")
-	settings.Environment, _ = azure.EnvironmentFromURL(armEndpoint)
+	log.Println("HERE armEndpoint: ", armEndpoint)
+	settings.Environment, err = azure.EnvironmentFromURL(armEndpoint)
+	if err != nil {
+		log.Println("HERE error getting environment from armEndpoint: ", armEndpoint)
+		return err
+	}
+	log.Println("HERE resource manager endpoint: ", c.ResourceManagerEndpoint)
 
 	c.ResourceManagerEndpoint = settings.Environment.ResourceManagerEndpoint
 	c.ResourceManagerVMDNSSuffix = GetAzureDNSZoneForEnvironment(settings.Environment.Name)
 	settings.Values[auth.SubscriptionID] = subscriptionID
 	// c.Authorizer, err = settings.GetAuthorizer()
 	c.Authorizer, err = c.getAuthorizerForResource(settings.Environment)
-
-	log.Println("HERE armEndpoint: ", armEndpoint)
-	log.Println("HERE resource manager endpoint: ", c.ResourceManagerEndpoint)
 	log.Println("HERE c.Authorizer: ", c.Authorizer, "err: ", err)
 	return err
 }
@@ -122,7 +157,7 @@ func (c *AzureClients) getAuthorizerForResource(env azure.Environment) (autorest
 	log.Println("HERE TokenAudience: ", env.TokenAudience)
 	log.Println("HERE ActiveDirectoryEndpoint: ", env.ActiveDirectoryEndpoint)
 	oauthConfig, err = adal.NewOAuthConfig(
-		env.ActiveDirectoryEndpoint, c.TenantID)
+		env.ActiveDirectoryEndpoint, "adfs")
 
 	if err != nil {
 		return nil, err

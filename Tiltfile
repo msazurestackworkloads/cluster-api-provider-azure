@@ -180,7 +180,8 @@ def capz():
     # Set up an image build for the provider. The live update configuration syncs the output from the local_resource
     # build into the container.
     docker_build(
-        ref = "gcr.io/k8s-staging-cluster-api-azure/cluster-api-azure-controller",
+        ref = "gcr.io/cluster-api-azure-controller-amd64:dev",
+        # ref = "gcr.io/k8s-staging-cluster-api-azure/cluster-api-azure-controller",
         context = "./.tiltbuild/",
         dockerfile_contents = dockerfile_contents,
         target = "tilt",

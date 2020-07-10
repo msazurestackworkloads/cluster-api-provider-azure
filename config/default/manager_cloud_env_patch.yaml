@@ -15,7 +15,7 @@ spec:
                 name: manager-bootstrap-cloud-env
                 key: cloud-env
           - name: AZURE_ARM_ENDPOINT
-            value: "https://management.ppe2.stackpoc.com"
+            value: "https://management.redmond.ext-n31r1203.masd.stbtest.microsoft.com"
             
             # valueFrom:
             #   configMapKeyRef:
