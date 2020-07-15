@@ -110,7 +110,8 @@ func (c *AzureClients) setCredentials(subscriptionID string) error {
 	log.Println("HERE resource manager endpoint: ", c.ResourceManagerEndpoint)
 
 	c.ResourceManagerEndpoint = settings.Environment.ResourceManagerEndpoint
-	c.ResourceManagerVMDNSSuffix = GetAzureDNSZoneForEnvironment(settings.Environment.Name)
+	c.ResourceManagerVMDNSSuffix = "cloudapp.ext-n31r1203.masd.stbtest.microsoft.com"
+	// c.ResourceManagerVMDNSSuffix = GetAzureDNSZoneForEnvironment(settings.Environment.Name)
 	settings.Values[auth.SubscriptionID] = subscriptionID
 	// c.Authorizer, err = settings.GetAuthorizer()
 	c.Authorizer, err = c.getAuthorizerForResource(settings.Environment)

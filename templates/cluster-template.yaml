@@ -41,6 +41,18 @@ spec:
     kind: AzureMachineTemplate
     name: ${CLUSTER_NAME}-control-plane
   kubeadmConfigSpec:
+    preKubeadmCommands: 
+      - echo "hello world again!"
+      - "cat /etc/kubernetes/azurestackcloud.json"
+      - sudo cp /var/lib/waagent/Certificates.pem /usr/local/share/ca-certificates/azsCertificate.crt
+      - sudo update-ca-certificates
+      - sudo echo "Environment='AZURE_ENVIRONMENT_FILEPATH=/etc/kubernetes/azurestackcloud.json'" >> /usr/lib/systemd/system/kubelet.service.d/10-kubeadm.conf
+      - sudo systemctl daemon-reload
+      - sudo systemctl restart kubelet
+      - echo "bye world!"
+    postKubeadmCommands: 
+      - "sudo sed -i 's/imagePullPolicy: IfNotPresent/imagePullPolicy: IfNotPresent\\n    env:\\n    - name: AZURE_ENVIRONMENT_FILEPATH\\n      value: \\/etc\\/kubernetes\\/azurestackcloud.json/g' /etc/kubernetes/manifests/kube-controller-manager.yaml"
+      - echo "bye bye!"
     clusterConfiguration:
       apiServer:
         extraArgs:
@@ -63,11 +75,15 @@ spec:
           mountPath: /etc/kubernetes/azure.json
           name: cloud-config
           readOnly: true
+        - hostPath: /etc/kubernetes/azurestackcloud.json
+          mountPath: /etc/kubernetes/azurestackcloud.json
+          name: cloud-config-stack
+          readOnly: true
     files:
     - content: |
         {
           "cloud": "${AZURE_ENVIRONMENT}",
-          "tenantId": "${AZURE_TENANT_ID}",
+          "tenantId": "adfs",
           "subscriptionId": "${AZURE_SUBSCRIPTION_ID}",
           "aadClientId": "${AZURE_CLIENT_ID}",
           "aadClientSecret": "${AZURE_CLIENT_SECRET}",
@@ -80,13 +96,42 @@ spec:
           "subnetName": "${CLUSTER_NAME}-node-subnet",
           "routeTableName": "${CLUSTER_NAME}-node-routetable",
           "userAssignedID": "${CLUSTER_NAME}",
-          "loadBalancerSku": "standard",
+          "loadBalancerSku": "Basic",
           "maximumLoadBalancerRuleCount": 250,
           "useManagedIdentityExtension": false,
-          "useInstanceMetadata": true
+          "useInstanceMetadata": false, 
+          "excludeMasterFromStandardLB": false
         }
       owner: root:root
       path: /etc/kubernetes/azure.json
+      permissions: "0644"
+    - content: |
+        {
+          "name":"${AZURE_ENVIRONMENT}",
+          "managementPortalURL":"https://portal.redmond.ext-n31r1203.masd.stbtest.microsoft.com/",
+          "publishSettingsURL":"",
+          "serviceManagementEndpoint":"https://management.adfs.n31r1203.masd.stbtest.microsoft.com/98bbb015-dcf2-467c-a1cb-951df61a0948",
+          "resourceManagerEndpoint":"https://management.redmond.ext-n31r1203.masd.stbtest.microsoft.com/",
+          "activeDirectoryEndpoint":"https://adfs.redmond.ext-n31r1203.masd.stbtest.microsoft.com/",
+          "galleryEndpoint":"https://providers.n31r1203.masd.stbtest.microsoft.com:30016/",
+          "keyVaultEndpoint":"",
+          "graphEndpoint":"https://graph.redmond.ext-n31r1203.masd.stbtest.microsoft.com/",
+          "serviceBusEndpoint":"",
+          "batchManagementEndpoint":"",
+          "storageEndpointSuffix":"redmond.ext-n31r1203.masd.stbtest.microsoft.com",
+          "sqlDatabaseDNSSuffix":"",
+          "trafficManagerDNSSuffix":"",
+          "keyVaultDNSSuffix":"vault.redmond.ext-n31r1203.masd.stbtest.microsoft.com",
+          "serviceBusEndpointSuffix":"",
+          "serviceManagementVMDNSSuffix":"",
+          "resourceManagerVMDNSSuffix":"cloudapp.ext-n31r1203.masd.stbtest.microsoft.com",
+          "containerRegistryDNSSuffix":"",
+          "cosmosDBDNSSuffix":"",
+          "tokenAudience":"",
+          "resourceIdentifiers":{"graph":"","keyVault":"","datalake":"","batch":"","operationalInsights":"","storage":""}
+        }
+      owner: root:root
+      path: /etc/kubernetes/azurestackcloud.json
       permissions: "0644"
     initConfiguration:
       nodeRegistration:
@@ -159,6 +204,12 @@ metadata:
 spec:
   template:
     spec:
+      image: 
+        marketplace: 
+          publisher: AzureStack
+          offer: Test
+          sku: capz-test
+          version: latest
       location: ${AZURE_LOCATION}
       osDisk:
         diskSizeGB: 30
@@ -180,7 +231,7 @@ spec:
       - content: |
           {
             "cloud": "${AZURE_ENVIRONMENT}",
-            "tenantId": "${AZURE_TENANT_ID}",
+            "tenantId": "adfs",
             "subscriptionId": "${AZURE_SUBSCRIPTION_ID}",
             "aadClientId": "${AZURE_CLIENT_ID}",
             "aadClientSecret": "${AZURE_CLIENT_SECRET}",
@@ -192,10 +243,11 @@ spec:
             "vnetResourceGroup": "${AZURE_RESOURCE_GROUP}",
             "subnetName": "${CLUSTER_NAME}-node-subnet",
             "routeTableName": "${CLUSTER_NAME}-node-routetable",
-            "loadBalancerSku": "standard",
+            "loadBalancerSku": "Basic",
             "maximumLoadBalancerRuleCount": 250,
             "useManagedIdentityExtension": false,
-            "useInstanceMetadata": true
+            "useInstanceMetadata": false,
+            "excludeMasterFromStandardLB": false
           }
         owner: root:root
         path: /etc/kubernetes/azure.json
