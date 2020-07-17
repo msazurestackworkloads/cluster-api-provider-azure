@@ -17,8 +17,10 @@ limitations under the License.
 package scope
 
 import (
+	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/adal"
@@ -49,29 +51,7 @@ type AzureClients struct {
 	Authorizer                 autorest.Authorizer
 }
 
-func (c *AzureClients) setCredentials(subscriptionID string) error {
-	// log.Println("HI PRINTING DIRECTORY")
-	// // DIR
-	// files, er := ioutil.ReadDir("/etc/ssl/certs")
-	// if er != nil {
-	// 	log.Fatal(er)
-	// }
-	// for _, f := range files {
-	// 	log.Println(f.Name())
-	// }
-	// log.Println("HI finished printing directory")
-
-	// // CURL
-	// resp, er := http.Get("https://management.redmond.ext-n31r1203.masd.stbtest.microsoft.com/metadata/endpoints?api-version=2015-01-01")
-	// if er != nil {
-	// 	log.Printf("HI ERROR: %s", er)
-	// }
-	// defer resp.Body.Close()
-	// body, er := ioutil.ReadAll(resp.Body)
-	// log.Println(string(body))
-
-	// log.Println("HI finished curling")
-
+func (c *AzureClients) setCredentials(subscriptionID, location string) error {
 	subID, err := getSubscriptionID(subscriptionID)
 	if err != nil {
 		return err
@@ -110,10 +90,10 @@ func (c *AzureClients) setCredentials(subscriptionID string) error {
 	log.Println("HERE resource manager endpoint: ", c.ResourceManagerEndpoint)
 
 	c.ResourceManagerEndpoint = settings.Environment.ResourceManagerEndpoint
-	c.ResourceManagerVMDNSSuffix = "cloudapp.ext-n31r1203.masd.stbtest.microsoft.com"
-	// c.ResourceManagerVMDNSSuffix = GetAzureDNSZoneForEnvironment(settings.Environment.Name)
+	azsFQDNSuffix := getAzureStackFQDNSuffix(armEndpoint, location)
+	c.ResourceManagerVMDNSSuffix = fmt.Sprintf("cloudapp.%s", azsFQDNSuffix)
+	log.Println("HERE c.ResourceManagerVMDNSSuffix: ", c.ResourceManagerVMDNSSuffix)
 	settings.Values[auth.SubscriptionID] = subscriptionID
-	// c.Authorizer, err = settings.GetAuthorizer()
 	c.Authorizer, err = c.getAuthorizerForResource(settings.Environment)
 	log.Println("HERE c.Authorizer: ", c.Authorizer, "err: ", err)
 	return err
@@ -146,6 +126,13 @@ func GetAzureDNSZoneForEnvironment(environmentName string) string {
 	default:
 		return "cloudapp.azure.com"
 	}
+}
+
+func getAzureStackFQDNSuffix(portalURL, location string) string {
+	azsFQDNSuffix := strings.Replace(portalURL, fmt.Sprintf("https://management.%s.", location), "", -1)
+	azsFQDNSuffix = strings.TrimSuffix(azsFQDNSuffix, "/")
+
+	return azsFQDNSuffix
 }
 
 // getAuthorizerForResource gets an OAuthTokenAuthorizer for Azure Resource Manager

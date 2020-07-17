@@ -69,7 +69,7 @@ func TestGettingEnvironment(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			os.Setenv("AZURE_ENVIRONMENT", test.azureEnv)
 			c := AzureClients{}
-			err := c.setCredentials("1234")
+			err := c.setCredentials("1234", "test_location")
 			if test.expectedError {
 				g.Expect(err).To(HaveOccurred())
 				g.Expect(err.Error()).To(ContainSubstring(test.expectedErrorMessage))
