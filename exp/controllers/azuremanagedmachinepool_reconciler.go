@@ -22,10 +22,10 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/compute/mgmt/compute"
 	"github.com/pkg/errors"
-	azure "github.com/chlau-az/cluster-api-provider-azure/cloud"
-	"github.com/chlau-az/cluster-api-provider-azure/cloud/scope"
-	"github.com/chlau-az/cluster-api-provider-azure/cloud/services/agentpools"
-	"github.com/chlau-az/cluster-api-provider-azure/cloud/services/scalesets"
+	azure "sigs.k8s.io/cluster-api-provider-azure/cloud"
+	"sigs.k8s.io/cluster-api-provider-azure/cloud/scope"
+	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/agentpools"
+	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/scalesets"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 

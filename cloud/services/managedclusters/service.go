@@ -17,7 +17,7 @@ limitations under the License.
 package managedclusters
 
 import (
-	azure "github.com/chlau-az/cluster-api-provider-azure/cloud"
+	azure "sigs.k8s.io/cluster-api-provider-azure/cloud"
 )
 
 // Service provides operations on azure resources

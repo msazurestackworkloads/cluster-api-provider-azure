@@ -17,10 +17,10 @@ limitations under the License.
 package virtualmachines
 
 import (
-	"github.com/chlau-az/cluster-api-provider-azure/cloud/scope"
-	"github.com/chlau-az/cluster-api-provider-azure/cloud/services/networkinterfaces"
-	"github.com/chlau-az/cluster-api-provider-azure/cloud/services/publicips"
-	"github.com/chlau-az/cluster-api-provider-azure/cloud/services/roleassignments"
+	"sigs.k8s.io/cluster-api-provider-azure/cloud/scope"
+	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/networkinterfaces"
+	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/publicips"
+	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/roleassignments"
 )
 
 // Service provides operations on azure resources

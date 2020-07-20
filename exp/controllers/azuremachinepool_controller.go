@@ -45,13 +45,13 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	infrav1 "github.com/chlau-az/cluster-api-provider-azure/api/v1alpha3"
-	azure "github.com/chlau-az/cluster-api-provider-azure/cloud"
-	"github.com/chlau-az/cluster-api-provider-azure/cloud/scope"
-	"github.com/chlau-az/cluster-api-provider-azure/cloud/services/scalesets"
-	"github.com/chlau-az/cluster-api-provider-azure/controllers"
-	infrav1exp "github.com/chlau-az/cluster-api-provider-azure/exp/api/v1alpha3"
-	"github.com/chlau-az/cluster-api-provider-azure/util/reconciler"
+	infrav1 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
+	azure "sigs.k8s.io/cluster-api-provider-azure/cloud"
+	"sigs.k8s.io/cluster-api-provider-azure/cloud/scope"
+	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/scalesets"
+	"sigs.k8s.io/cluster-api-provider-azure/controllers"
+	infrav1exp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
+	"sigs.k8s.io/cluster-api-provider-azure/util/reconciler"
 )
 
 type (

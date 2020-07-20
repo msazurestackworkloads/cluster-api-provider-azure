@@ -20,7 +20,7 @@ import (
 	"context"
 
 	"github.com/Azure/go-autorest/autorest"
-	infrav1exp "github.com/chlau-az/cluster-api-provider-azure/exp/api/v1alpha3"
+	infrav1exp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	"github.com/go-logr/logr"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime"

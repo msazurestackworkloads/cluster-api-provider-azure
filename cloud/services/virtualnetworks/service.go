@@ -17,7 +17,7 @@ limitations under the License.
 package virtualnetworks
 
 import (
-	"github.com/chlau-az/cluster-api-provider-azure/cloud/scope"
+	"sigs.k8s.io/cluster-api-provider-azure/cloud/scope"
 )
 
 // Service provides operations on azure resources

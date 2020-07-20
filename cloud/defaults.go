@@ -21,8 +21,8 @@ import (
 
 	"github.com/blang/semver"
 	"github.com/pkg/errors"
-	infrav1 "github.com/chlau-az/cluster-api-provider-azure/api/v1alpha3"
-	"github.com/chlau-az/cluster-api-provider-azure/version"
+	infrav1 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
+	"sigs.k8s.io/cluster-api-provider-azure/version"
 )
 
 const (

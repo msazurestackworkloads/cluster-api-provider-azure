@@ -36,9 +36,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	infrav1 "github.com/chlau-az/cluster-api-provider-azure/api/v1alpha3"
-	"github.com/chlau-az/cluster-api-provider-azure/cloud/scope"
-	"github.com/chlau-az/cluster-api-provider-azure/util/reconciler"
+	infrav1 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
+	"sigs.k8s.io/cluster-api-provider-azure/cloud/scope"
+	"sigs.k8s.io/cluster-api-provider-azure/util/reconciler"
 )
 
 // AzureClusterReconciler reconciles a AzureCluster object

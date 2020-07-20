@@ -19,7 +19,7 @@ package azure
 import (
 	"context"
 	"github.com/Azure/go-autorest/autorest"
-	infrav1 "github.com/chlau-az/cluster-api-provider-azure/api/v1alpha3"
+	infrav1 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 )
 
 // Service is a generic interface used by components offering a type of service.

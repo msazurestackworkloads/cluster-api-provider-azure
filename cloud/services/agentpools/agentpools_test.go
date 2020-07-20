@@ -27,7 +27,7 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/gomega"
-	"github.com/chlau-az/cluster-api-provider-azure/cloud/services/agentpools/mock_agentpools"
+	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/agentpools/mock_agentpools"
 )
 
 const (

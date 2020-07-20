@@ -338,7 +338,7 @@ You can optionally set the following variables:
 
 | Variable                   | Description                                                                                                               | Default                                                                               |
 |----------------------------|---------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------|
-| `E2E_CONF_FILE`            | The path of the [E2E configuration file](https://cluster-api.sigs.k8s.io/developer/e2e.html#defining-an-e2e-config-file).      | `${GOPATH}/src/github.com/chlau-az/cluster-api-provider-azure/test/e2e/config/azure-dev.yaml`  |
+| `E2E_CONF_FILE`            | The path of the [E2E configuration file](https://cluster-api.sigs.k8s.io/developer/e2e.html#defining-an-e2e-config-file).      | `${GOPATH}/src/sigs.k8s.io/cluster-api-provider-azure/test/e2e/config/azure-dev.yaml`  |
 | `SKIP_CLEANUP`             | Set to `true` if you do not want the bootstrap and workload clusters to be cleaned up after running E2E tests.            | `false`                                                                               |
 | `SKIP_CREATE_MGMT_CLUSTER` | Skip management cluster creation.                                                                                         | `false`                                                                               |
 

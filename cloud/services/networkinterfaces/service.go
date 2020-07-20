@@ -17,13 +17,13 @@ limitations under the License.
 package networkinterfaces
 
 import (
-	"github.com/chlau-az/cluster-api-provider-azure/cloud/scope"
-	"github.com/chlau-az/cluster-api-provider-azure/cloud/services/inboundnatrules"
-	"github.com/chlau-az/cluster-api-provider-azure/cloud/services/internalloadbalancers"
-	"github.com/chlau-az/cluster-api-provider-azure/cloud/services/publicips"
-	"github.com/chlau-az/cluster-api-provider-azure/cloud/services/publicloadbalancers"
-	"github.com/chlau-az/cluster-api-provider-azure/cloud/services/resourceskus"
-	"github.com/chlau-az/cluster-api-provider-azure/cloud/services/subnets"
+	"sigs.k8s.io/cluster-api-provider-azure/cloud/scope"
+	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/inboundnatrules"
+	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/internalloadbalancers"
+	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/publicips"
+	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/publicloadbalancers"
+	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/resourceskus"
+	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/subnets"
 )
 
 // Service provides operations on azure resources

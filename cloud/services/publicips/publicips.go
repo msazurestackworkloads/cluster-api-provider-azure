@@ -22,7 +22,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/network/mgmt/network"
 	"github.com/Azure/go-autorest/autorest/to"
-	azure "github.com/chlau-az/cluster-api-provider-azure/cloud"
+	azure "sigs.k8s.io/cluster-api-provider-azure/cloud"
 	"github.com/pkg/errors"
 	"k8s.io/klog"
 )

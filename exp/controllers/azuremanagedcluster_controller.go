@@ -37,8 +37,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	infrav1exp "github.com/chlau-az/cluster-api-provider-azure/exp/api/v1alpha3"
-	"github.com/chlau-az/cluster-api-provider-azure/util/reconciler"
+	infrav1exp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
+	"sigs.k8s.io/cluster-api-provider-azure/util/reconciler"
 )
 
 // AzureManagedClusterReconciler reconciles a AzureManagedCluster object

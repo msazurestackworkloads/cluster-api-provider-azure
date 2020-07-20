@@ -25,7 +25,7 @@ import (
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/gomega"
-	"github.com/chlau-az/cluster-api-provider-azure/cloud/services/managedclusters/mock_managedclusters"
+	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/managedclusters/mock_managedclusters"
 )
 
 func TestReconcile(t *testing.T) {

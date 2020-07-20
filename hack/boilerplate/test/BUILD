@@ -11,7 +11,7 @@ go_library(
         "fail.go",
         "pass.go",
     ],
-    importpath = "github.com/chlau-az/cluster-api-provider-azure/hack/boilerplate/test",
+    importpath = "sigs.k8s.io/cluster-api-provider-azure/hack/boilerplate/test",
 )
 
 filegroup(

@@ -17,14 +17,14 @@ limitations under the License.
 package controllers
 
 import (
-	infrav1 "github.com/chlau-az/cluster-api-provider-azure/api/v1alpha3"
-	azure "github.com/chlau-az/cluster-api-provider-azure/cloud"
+	infrav1 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
+	azure "sigs.k8s.io/cluster-api-provider-azure/cloud"
 	"testing"
 
 	. "github.com/onsi/gomega"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"github.com/chlau-az/cluster-api-provider-azure/cloud/scope"
+	"sigs.k8s.io/cluster-api-provider-azure/cloud/scope"
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )

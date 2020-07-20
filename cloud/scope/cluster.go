@@ -21,8 +21,8 @@ import (
 	"fmt"
 
 	"github.com/Azure/go-autorest/autorest"
-	infrav1 "github.com/chlau-az/cluster-api-provider-azure/api/v1alpha3"
-	azure "github.com/chlau-az/cluster-api-provider-azure/cloud"
+	infrav1 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
+	azure "sigs.k8s.io/cluster-api-provider-azure/cloud"
 	"github.com/go-logr/logr"
 	"github.com/pkg/errors"
 	"k8s.io/klog/klogr"

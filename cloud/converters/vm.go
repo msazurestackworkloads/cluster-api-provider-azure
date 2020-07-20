@@ -19,7 +19,7 @@ package converters
 import (
 	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/compute/mgmt/compute"
 	"github.com/Azure/go-autorest/autorest/to"
-	infrav1 "github.com/chlau-az/cluster-api-provider-azure/api/v1alpha3"
+	infrav1 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 )
 
 // SDKToVM converts an Azure SDK VirtualMachine to the CAPZ VM type.

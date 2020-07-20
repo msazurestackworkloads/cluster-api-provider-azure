@@ -22,7 +22,7 @@ import (
 
 	"github.com/onsi/gomega"
 
-	"github.com/chlau-az/cluster-api-provider-azure/util/reconciler"
+	"sigs.k8s.io/cluster-api-provider-azure/util/reconciler"
 )
 
 func TestDefaultedTimeout(t *testing.T) {

@@ -17,9 +17,9 @@ limitations under the License.
 package internalloadbalancers
 
 import (
-	"github.com/chlau-az/cluster-api-provider-azure/cloud/scope"
-	"github.com/chlau-az/cluster-api-provider-azure/cloud/services/subnets"
-	"github.com/chlau-az/cluster-api-provider-azure/cloud/services/virtualnetworks"
+	"sigs.k8s.io/cluster-api-provider-azure/cloud/scope"
+	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/subnets"
+	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/virtualnetworks"
 )
 
 // Service provides operations on azure resources

@@ -17,7 +17,7 @@ limitations under the License.
 package publicips
 
 import (
-	azure "github.com/chlau-az/cluster-api-provider-azure/cloud"
+	azure "sigs.k8s.io/cluster-api-provider-azure/cloud"
 )
 
 // PublicIPScope defines the scope interface for a public IP service.

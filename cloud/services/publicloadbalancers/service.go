@@ -17,8 +17,8 @@ limitations under the License.
 package publicloadbalancers
 
 import (
-	"github.com/chlau-az/cluster-api-provider-azure/cloud/scope"
-	"github.com/chlau-az/cluster-api-provider-azure/cloud/services/publicips"
+	"sigs.k8s.io/cluster-api-provider-azure/cloud/scope"
+	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/publicips"
 )
 
 // Service provides operations on azure resources

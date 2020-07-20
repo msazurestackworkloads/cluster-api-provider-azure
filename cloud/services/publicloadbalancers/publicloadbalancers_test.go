@@ -21,9 +21,9 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/chlau-az/cluster-api-provider-azure/cloud/services/publicips/mock_publicips"
-	"github.com/chlau-az/cluster-api-provider-azure/cloud/services/publicloadbalancers/mock_publicloadbalancers"
-	"github.com/chlau-az/cluster-api-provider-azure/internal/test/matchers"
+	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/publicips/mock_publicips"
+	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/publicloadbalancers/mock_publicloadbalancers"
+	"sigs.k8s.io/cluster-api-provider-azure/internal/test/matchers"
 	. "github.com/onsi/gomega"
 
 	"github.com/Azure/go-autorest/autorest"
@@ -31,8 +31,8 @@ import (
 	"github.com/golang/mock/gomock"
 
 	network "github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/network/mgmt/network"
-	infrav1 "github.com/chlau-az/cluster-api-provider-azure/api/v1alpha3"
-	"github.com/chlau-az/cluster-api-provider-azure/cloud/scope"
+	infrav1 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
+	"sigs.k8s.io/cluster-api-provider-azure/cloud/scope"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1alpha3"
