@@ -25,7 +25,6 @@ import (
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/go-autorest/autorest/azure"
-	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/pkg/errors"
 )
 
@@ -38,64 +37,39 @@ const (
 	PublicCloud = "AzurePublicCloud"
 	// USGovernmentCloud is the cloud environment for the US Government
 	USGovernmentCloud = "AzureUSGovernmentCloud"
+	// AzureStackCloud
+	AzureStackCloud = "AzureStackCloud"
 )
 
 // AzureClients contains all the Azure clients used by the scopes.
 type AzureClients struct {
 	SubscriptionID             string
-	ClientID                   string
-	ClientSecret               string
-	TenantID                   string
 	ResourceManagerEndpoint    string
 	ResourceManagerVMDNSSuffix string
 	Authorizer                 autorest.Authorizer
 }
 
-func (c *AzureClients) setCredentials(subscriptionID, location string) error {
+func (c *AzureClients) setCredentials(subscriptionID string) error {
 	subID, err := getSubscriptionID(subscriptionID)
 	if err != nil {
 		return err
 	}
 	c.SubscriptionID = subID
 
-	c.ClientID = "huey"
-	c.ClientSecret = "dewey"
-	c.TenantID = "louie"
-	log.Println("HERE 0client id: ", c.ClientID)
-	log.Println("HERE 0client secret: ", c.ClientSecret)
-	log.Println("HERE 0tenant id: ", c.TenantID)
-	log.Println("HERE 0subscription id: ", c.SubscriptionID)
-
-	c.ClientID = os.Getenv("AZURE_CLIENT_ID")
-	c.ClientSecret = os.Getenv("AZURE_CLIENT_SECRET")
-	c.TenantID = os.Getenv("AZURE_TENANT_ID")
-	log.Println("HERE client id: ", c.ClientID)
-	log.Println("HERE client secret: ", c.ClientSecret)
-	log.Println("HERE tenant id: ", c.TenantID)
-	log.Println("HERE subscription id: ", c.SubscriptionID)
-	settings, err := auth.GetSettingsFromEnvironment()
-	if err != nil {
-		log.Println("HERE couldn't find environment")
-		// return err
-	}
-
-	// To do: get arm endpoint in helper method
 	armEndpoint := os.Getenv("AZURE_ARM_ENDPOINT")
 	log.Println("HERE armEndpoint: ", armEndpoint)
-	settings.Environment, err = azure.EnvironmentFromURL(armEndpoint)
+	env, err := azure.EnvironmentFromURL(armEndpoint)
 	if err != nil {
 		log.Println("HERE error getting environment from armEndpoint: ", armEndpoint)
 		return err
 	}
-	log.Println("HERE resource manager endpoint: ", c.ResourceManagerEndpoint)
 
-	c.ResourceManagerEndpoint = settings.Environment.ResourceManagerEndpoint
-	azsFQDNSuffix := getAzureStackFQDNSuffix(armEndpoint, location)
-	c.ResourceManagerVMDNSSuffix = fmt.Sprintf("cloudapp.%s", azsFQDNSuffix)
+	c.ResourceManagerEndpoint = env.ResourceManagerEndpoint
+	log.Println("HERE c.ResourceManagerEndpoint: ", c.ResourceManagerEndpoint)
+	c.ResourceManagerVMDNSSuffix = GetAzureDNSZoneForEnvironment("AzureStackCloud")
 	log.Println("HERE c.ResourceManagerVMDNSSuffix: ", c.ResourceManagerVMDNSSuffix)
-	settings.Values[auth.SubscriptionID] = subscriptionID
-	c.Authorizer, err = c.getAuthorizerForResource(settings.Environment)
-	log.Println("HERE c.Authorizer: ", c.Authorizer, "err: ", err)
+	c.Authorizer, err = getAuthorizerForResource(env)
+	log.Println("HERE c.Authorizer: ", c.Authorizer)
 	return err
 }
 
@@ -123,23 +97,34 @@ func GetAzureDNSZoneForEnvironment(environmentName string) string {
 		return "cloudapp.azure.com"
 	case USGovernmentCloud:
 		return "cloudapp.usgovcloudapi.net"
+	case AzureStackCloud:
+		armEndpoint := os.Getenv("AZURE_ARM_ENDPOINT")
+		azsFQDNSuffix := getAzureStackFQDNSuffix(armEndpoint)
+		return fmt.Sprintf("cloudapp.%s", azsFQDNSuffix)
 	default:
 		return "cloudapp.azure.com"
 	}
 }
 
-func getAzureStackFQDNSuffix(portalURL, location string) string {
-	azsFQDNSuffix := strings.Replace(portalURL, fmt.Sprintf("https://management.%s.", location), "", -1)
+func getAzureStackFQDNSuffix(portalURL string) string {
+	azsFQDNSuffix := strings.Replace(portalURL, "https://management.", "", -1)
+	azsFQDNSuffix = strings.Join(strings.Split(azsFQDNSuffix, ".")[1:], ".") //remove location prefix
 	azsFQDNSuffix = strings.TrimSuffix(azsFQDNSuffix, "/")
-
 	return azsFQDNSuffix
 }
 
 // getAuthorizerForResource gets an OAuthTokenAuthorizer for Azure Resource Manager
-func (c *AzureClients) getAuthorizerForResource(env azure.Environment) (autorest.Authorizer, error) {
+func getAuthorizerForResource(env azure.Environment) (autorest.Authorizer, error) {
 	var a autorest.Authorizer
 	var err error
 	var oauthConfig *adal.OAuthConfig
+
+	clientID := os.Getenv("AZURE_CLIENT_ID")
+	clientSecret := os.Getenv("AZURE_CLIENT_SECRET")
+	tenantID := os.Getenv("AZURE_TENANT_ID")
+	log.Println("HERE client id: ", clientID)
+	log.Println("HERE client secret: ", clientSecret)
+	log.Println("HERE tenant id: ", tenantID)
 
 	tokenAudience := env.TokenAudience
 	log.Println("HERE TokenAudience: ", env.TokenAudience)
@@ -150,10 +135,11 @@ func (c *AzureClients) getAuthorizerForResource(env azure.Environment) (autorest
 	if err != nil {
 		return nil, err
 	}
+
 	token, err := adal.NewServicePrincipalToken(
 		*oauthConfig,
-		c.ClientID,
-		c.ClientSecret,
+		clientID,
+		clientSecret,
 		tokenAudience)
 
 	log.Println("HERE generated token")
