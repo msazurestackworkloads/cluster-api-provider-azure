@@ -123,7 +123,7 @@ LDFLAGS := $(shell hack/version.sh)
 FEATURE_GATE_MACHINE_POOL ?= false
 FEATURE_GATES_JSON_PATCH := [{"op": "add", "path": "/spec/template/spec/containers/1/args/-", "value": "--feature-gates=MachinePool=$(FEATURE_GATE_MACHINE_POOL)"}]
 
-CLUSTER_TEMPLATE ?= cluster-template.yaml
+CLUSTER_TEMPLATE ?= cluster-template-azure-stack.yaml
 MANAGED_CLUSTER_TEMPLATE ?= cluster-template-aks.yaml
 
 ## --------------------------------------
