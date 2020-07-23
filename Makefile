@@ -92,7 +92,7 @@ REGISTRY ?= gcr.io/$(shell gcloud config get-value project)
 STAGING_REGISTRY := gcr.io/k8s-staging-cluster-api-azure
 PROD_REGISTRY := us.gcr.io/k8s-artifacts-prod/cluster-api-azure
 IMAGE_NAME ?= cluster-api-azure-controller
-CONTROLLER_IMG ?= $(REGISTRY)$(IMAGE_NAME)
+CONTROLLER_IMG ?= $(REGISTRY)/$(IMAGE_NAME)
 TAG ?= dev
 ARCH ?= amd64
 ALL_ARCH = amd64 arm arm64 ppc64le s390x
@@ -123,7 +123,7 @@ LDFLAGS := $(shell hack/version.sh)
 FEATURE_GATE_MACHINE_POOL ?= false
 FEATURE_GATES_JSON_PATCH := [{"op": "add", "path": "/spec/template/spec/containers/1/args/-", "value": "--feature-gates=MachinePool=$(FEATURE_GATE_MACHINE_POOL)"}]
 
-CLUSTER_TEMPLATE ?= cluster-template-azure-stack.yaml
+CLUSTER_TEMPLATE ?= cluster-template.yaml
 MANAGED_CLUSTER_TEMPLATE ?= cluster-template-aks.yaml
 
 ## --------------------------------------

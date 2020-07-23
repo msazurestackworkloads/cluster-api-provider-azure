@@ -129,9 +129,16 @@ func getAuthorizerForResource(env azure.Environment) (autorest.Authorizer, error
 	tokenAudience := env.TokenAudience
 	log.Println("HERE TokenAudience: ", env.TokenAudience)
 	log.Println("HERE ActiveDirectoryEndpoint: ", env.ActiveDirectoryEndpoint)
-	oauthConfig, err = adal.NewOAuthConfig(
-		env.ActiveDirectoryEndpoint, "adfs")
 
+	identitySystem := os.Getenv("IDENTITY_SYSTEM")
+	log.Println("HERE identity system: ", identitySystem)
+	if identitySystem == "adfs" {
+		oauthConfig, err = adal.NewOAuthConfig(
+			env.ActiveDirectoryEndpoint, "adfs")
+	} else {
+		oauthConfig, err = adal.NewOAuthConfig(
+			env.ActiveDirectoryEndpoint, tenantID)
+	}
 	if err != nil {
 		return nil, err
 	}
