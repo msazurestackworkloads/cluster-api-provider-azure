@@ -24,9 +24,6 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/compute/mgmt/compute"
 	"github.com/Azure/go-autorest/autorest/to"
-	infrav1 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
-	azure "sigs.k8s.io/cluster-api-provider-azure/cloud"
-	"sigs.k8s.io/cluster-api-provider-azure/cloud/converters"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	infrav1 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
@@ -336,9 +333,9 @@ func (s *Service) generateStorageProfile(ctx context.Context, vmSpec Spec) (*com
 			return nil, fmt.Errorf("vm size %s does not support ephemeral os. select a different vm size or disable ephemeral os", vmSpec.Size)
 		}
 
-		storageProfile.OsDisk.DiffDiskSettings = &compute.DiffDiskSettings{
-			Option: compute.DiffDiskOptions(vmSpec.OSDisk.DiffDiskSettings.Option),
-		}
+		// storageProfile.OsDisk.DiffDiskSettings = &compute.DiffDiskSettings{
+		// 	Option: compute.DiffDiskOptions(vmSpec.OSDisk.DiffDiskSettings.Option),
+		// }
 	}
 
 	dataDisks := []compute.DataDisk{}
@@ -380,3 +377,4 @@ func getSpotVMOptions(spotVMOptions *infrav1.SpotVMOptions) (compute.VirtualMach
 	}
 	return compute.Spot, compute.Deallocate, billingProfile, nil
 }
+*/
