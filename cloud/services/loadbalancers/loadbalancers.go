@@ -108,12 +108,10 @@ func (s *Service) Reconcile(ctx context.Context) error {
 						Name: &backEndAddressPoolName,
 					},
 				},
-				OutboundRules: &[]network.OutboundRule{
+				OutboundNatRules: &[]network.OutboundNatRule{
 					{
 						Name: to.StringPtr("OutboundNATAllProtocols"),
-						OutboundRulePropertiesFormat: &network.OutboundRulePropertiesFormat{
-							Protocol:             network.LoadBalancerOutboundRuleProtocolAll,
-							IdleTimeoutInMinutes: to.Int32Ptr(4),
+						OutboundNatRulePropertiesFormat: &network.OutboundNatRulePropertiesFormat{
 							FrontendIPConfigurations: &[]network.SubResource{
 								{
 									ID: to.StringPtr(fmt.Sprintf("/%s/%s/frontendIPConfigurations/%s", idPrefix, lbSpec.Name, frontEndIPConfigName)),
@@ -129,12 +127,12 @@ func (s *Service) Reconcile(ctx context.Context) error {
 		}
 
 		if lbSpec.Role == infrav1.APIServerRole || lbSpec.Role == infrav1.InternalRole {
-			probeName := "HTTPSProbe"
+			probeName := "tcpHTTPSProbe"
 			lb.LoadBalancerPropertiesFormat.Probes = &[]network.Probe{
 				{
 					Name: to.StringPtr(probeName),
 					ProbePropertiesFormat: &network.ProbePropertiesFormat{
-						Protocol:          network.ProbeProtocolHTTPS,
+						Protocol:          network.ProbeProtocolTCP,
 						RequestPath:       to.StringPtr("/healthz"),
 						Port:              to.Int32Ptr(lbSpec.APIServerPort),
 						IntervalInSeconds: to.Int32Ptr(15),
@@ -150,7 +148,7 @@ func (s *Service) Reconcile(ctx context.Context) error {
 					BackendPort:          to.Int32Ptr(lbSpec.APIServerPort),
 					IdleTimeoutInMinutes: to.Int32Ptr(4),
 					EnableFloatingIP:     to.BoolPtr(false),
-					LoadDistribution:     network.LoadDistributionDefault,
+					LoadDistribution:     "Default",
 					FrontendIPConfiguration: &network.SubResource{
 						ID: to.StringPtr(fmt.Sprintf("/%s/%s/frontendIPConfigurations/%s", idPrefix, lbSpec.Name, frontEndIPConfigName)),
 					},
@@ -168,7 +166,7 @@ func (s *Service) Reconcile(ctx context.Context) error {
 				// For more information on Standard LB outbound connections see https://docs.microsoft.com/en-us/azure/load-balancer/load-balancer-outbound-connections.
 				lbRule.LoadBalancingRulePropertiesFormat.DisableOutboundSnat = to.BoolPtr(true)
 			} else if lbSpec.Role == infrav1.InternalRole {
-				lb.LoadBalancerPropertiesFormat.OutboundRules = nil
+				lb.LoadBalancerPropertiesFormat.OutboundNatRules = nil
 			}
 			lb.LoadBalancerPropertiesFormat.LoadBalancingRules = &[]network.LoadBalancingRule{lbRule}
 		}
