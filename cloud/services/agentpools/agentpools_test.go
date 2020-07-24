@@ -38,6 +38,8 @@ func TestInvalidAgentPoolsSpec(t *testing.T) {
 	g := NewWithT(t)
 
 	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
 	agentpoolsMock := mock_agentpools.NewMockClient(mockCtrl)
 
 	s := &Service{
@@ -100,10 +102,14 @@ func TestReconcile(t *testing.T) {
 	for _, tc := range provisioningstatetestcases {
 		for _, provisioningstate := range tc.provisioningStatesToTest {
 			t.Logf("Testing agentpool provision state: " + provisioningstate)
+			tc := tc
 			t.Run(tc.name, func(t *testing.T) {
 				g := NewWithT(t)
+				t.Parallel()
 
 				mockCtrl := gomock.NewController(t)
+				defer mockCtrl.Finish()
+
 				agentpoolsMock := mock_agentpools.NewMockClient(mockCtrl)
 
 				tc.expect(agentpoolsMock.EXPECT(), provisioningstate)
@@ -118,7 +124,6 @@ func TestReconcile(t *testing.T) {
 					g.Expect(err).To(MatchError(tc.expectedError))
 				} else {
 					g.Expect(err).NotTo(HaveOccurred())
-					mockCtrl.Finish()
 				}
 			})
 		}
@@ -246,10 +251,13 @@ func TestReconcile(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Logf("Testing " + tc.name)
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			g := NewWithT(t)
-
+			t.Parallel()
 			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
 			agentpoolsMock := mock_agentpools.NewMockClient(mockCtrl)
 
 			tc.expect(agentpoolsMock.EXPECT())
@@ -264,7 +272,6 @@ func TestReconcile(t *testing.T) {
 				g.Expect(err).To(MatchError(tc.expectedError))
 			} else {
 				g.Expect(err).NotTo(HaveOccurred())
-				mockCtrl.Finish()
 			}
 		})
 	}
@@ -318,10 +325,13 @@ func TestDeleteAgentPools(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			g := NewWithT(t)
-
+			t.Parallel()
 			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
 			agentPoolsMock := mock_agentpools.NewMockClient(mockCtrl)
 
 			tc.expect(agentPoolsMock.EXPECT())

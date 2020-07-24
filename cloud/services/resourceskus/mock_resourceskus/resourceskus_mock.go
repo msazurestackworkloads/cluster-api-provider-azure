@@ -65,18 +65,3 @@ func (mr *MockClientMockRecorder) List(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockClient)(nil).List), arg0, arg1)
 }
-
-// HasAcceleratedNetworking mocks base method.
-func (m *MockClient) HasAcceleratedNetworking(arg0 context.Context, arg1 string) (bool, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "HasAcceleratedNetworking", arg0, arg1)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// HasAcceleratedNetworking indicates an expected call of HasAcceleratedNetworking.
-func (mr *MockClientMockRecorder) HasAcceleratedNetworking(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasAcceleratedNetworking", reflect.TypeOf((*MockClient)(nil).HasAcceleratedNetworking), arg0, arg1)
-}

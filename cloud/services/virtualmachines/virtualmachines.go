@@ -18,13 +18,10 @@ package virtualmachines
 
 import (
 	"context"
-	"crypto/rand"
-	"encoding/base64"
 	"fmt"
 	"log"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/authorization/mgmt/authorization"
 	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/compute/mgmt/compute"
 	"github.com/Azure/go-autorest/autorest/to"
 	infrav1 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
@@ -32,22 +29,23 @@ import (
 	"sigs.k8s.io/cluster-api-provider-azure/cloud/converters"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/util/uuid"
-	"k8s.io/klog"
+	infrav1 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
+	azure "sigs.k8s.io/cluster-api-provider-azure/cloud"
+	"sigs.k8s.io/cluster-api-provider-azure/cloud/converters"
+	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/resourceskus"
 )
-
-const azureBuiltInContributorID = "b24988ac-6180-42a0-ab88-20f7382dd24c"
 
 // Spec input specification for Get/CreateOrUpdate/Delete calls
 type Spec struct {
 	Name                   string
-	NICName                string
+	NICNames               []string
 	SSHKeyData             string
 	Size                   string
 	Zone                   string
 	Image                  *infrav1.Image
 	Identity               infrav1.VMIdentity
 	OSDisk                 infrav1.OSDisk
+	DataDisks              []infrav1.DataDisk
 	CustomData             string
 	UserAssignedIdentities []infrav1.UserAssignedIdentity
 	SpotVMOptions          *infrav1.SpotVMOptions
@@ -84,19 +82,29 @@ func (s *Service) Reconcile(ctx context.Context, spec interface{}) error {
 		return errors.New("invalid VM specification")
 	}
 
-	storageProfile, err := generateStorageProfile(*vmSpec)
+	storageProfile, err := s.generateStorageProfile(ctx, *vmSpec)
 	if err != nil {
 		return err
 	}
 
-	klog.V(2).Infof("getting NIC %s", vmSpec.NICName)
-	nic, err := s.InterfacesClient.Get(ctx, s.Scope.ResourceGroup(), vmSpec.NICName)
-	if err != nil {
-		return err
+	nicRefs := make([]compute.NetworkInterfaceReference, len(vmSpec.NICNames))
+	for i, nicName := range vmSpec.NICNames {
+		primary := i == 0
+		s.Scope.V(2).Info("getting network interface", "network interface", nicName)
+		nic, err := s.InterfacesClient.Get(ctx, s.Scope.ResourceGroup(), nicName)
+		if err != nil {
+			return err
+		}
+		s.Scope.V(2).Info("got network interface", "network interface", nicName)
+		nicRefs[i] = compute.NetworkInterfaceReference{
+			ID: nic.ID,
+			NetworkInterfaceReferenceProperties: &compute.NetworkInterfaceReferenceProperties{
+				Primary: to.BoolPtr(primary),
+			},
+		}
 	}
-	klog.V(2).Infof("got NIC %s", vmSpec.NICName)
 
-	klog.V(2).Infof("creating VM %s ", vmSpec.Name)
+	s.Scope.V(2).Info("creating VM", "vm", vmSpec.Name)
 
 	// Make sure to use the MachineScope here to get the merger of AzureCluster and AzureMachine tags
 	additionalTags := s.MachineScope.AdditionalTags()
@@ -141,19 +149,12 @@ func (s *Service) Reconcile(ctx context.Context, spec interface{}) error {
 				},
 			},
 			NetworkProfile: &compute.NetworkProfile{
-				NetworkInterfaces: &[]compute.NetworkInterfaceReference{
-					{
-						ID: nic.ID,
-						NetworkInterfaceReferenceProperties: &compute.NetworkInterfaceReferenceProperties{
-							Primary: to.BoolPtr(true),
-						},
-					},
-				},
+				NetworkInterfaces: &nicRefs,
 			},
 		},
 	}
 
-	klog.V(2).Infof("Setting zone %s ", vmSpec.Zone)
+	s.Scope.V(2).Info("Setting zone", "zone", vmSpec.Zone)
 
 	if vmSpec.Zone != "" {
 		zones := []string{vmSpec.Zone}
@@ -211,38 +212,7 @@ func (s *Service) Reconcile(ctx context.Context, spec interface{}) error {
 	}
 	log.Println("HI CREATING VM FINISHED: ", vmSpec.Name)
 
-	if vmSpec.Identity == infrav1.VMIdentitySystemAssigned {
-		err = s.createRoleAssignmentForIdentity(ctx, vmSpec.Name)
-		if err != nil {
-			return errors.Wrapf(err, "cannot create VM")
-		}
-	}
-
-	klog.V(2).Infof("successfully created VM %s ", vmSpec.Name)
-	return nil
-}
-
-func (s *Service) createRoleAssignmentForIdentity(ctx context.Context, vmName string) error {
-	resultVM, err := s.Client.Get(ctx, s.Scope.ResourceGroup(), vmName)
-	if err != nil {
-		return errors.Wrapf(err, "cannot get VM to assign role to system assigned identity")
-	}
-
-	scope := fmt.Sprintf("/subscriptions/%s/", s.Scope.SubscriptionID())
-	// Azure built-in roles https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles
-	contributorRoleDefinitionID := fmt.Sprintf("/subscriptions/%s/providers/Microsoft.Authorization/roleDefinitions/%s", s.Scope.SubscriptionID(), azureBuiltInContributorID)
-	params := authorization.RoleAssignmentCreateParameters{
-		Properties: &authorization.RoleAssignmentProperties{
-			RoleDefinitionID: to.StringPtr(contributorRoleDefinitionID),
-			PrincipalID:      to.StringPtr(*resultVM.Identity.PrincipalID),
-		},
-	}
-	_, err = s.RoleAssignmentsClient.Create(ctx, scope, string(uuid.NewUUID()), params)
-	if err != nil {
-		return errors.Wrapf(err, "cannot assign role to VM system assigned identity")
-	}
-
-	klog.V(2).Infof("successfully created Role assignment for generated Identity for VM %s ", vmName)
+	s.Scope.V(2).Info("successfully created VM", "vm", vmSpec.Name)
 	return nil
 }
 
@@ -252,7 +222,7 @@ func (s *Service) Delete(ctx context.Context, spec interface{}) error {
 	if !ok {
 		return errors.New("invalid VM specification")
 	}
-	klog.V(2).Infof("deleting VM %s ", vmSpec.Name)
+	s.Scope.V(2).Info("deleting VM", "vm", vmSpec.Name)
 	err := s.Client.Delete(ctx, s.Scope.ResourceGroup(), vmSpec.Name)
 	if err != nil && azure.ResourceNotFound(err) {
 		// already deleted
@@ -262,7 +232,7 @@ func (s *Service) Delete(ctx context.Context, spec interface{}) error {
 		return errors.Wrapf(err, "failed to delete VM %s in resource group %s", vmSpec.Name, s.Scope.ResourceGroup())
 	}
 
-	klog.V(2).Infof("successfully deleted VM %s ", vmSpec.Name)
+	s.Scope.V(2).Info("successfully deleted VM", "vm", vmSpec.Name)
 	return nil
 }
 
@@ -342,7 +312,7 @@ func getResourceNameByID(resourceID string) string {
 }
 
 // generateStorageProfile generates a pointer to a compute.StorageProfile which can utilized for VM creation.
-func generateStorageProfile(vmSpec Spec) (*compute.StorageProfile, error) {
+func (s *Service) generateStorageProfile(ctx context.Context, vmSpec Spec) (*compute.StorageProfile, error) {
 	storageProfile := &compute.StorageProfile{
 		OsDisk: &compute.OSDisk{
 			Name:         to.StringPtr(azure.GenerateOSDiskName(vmSpec.Name)),
@@ -355,10 +325,33 @@ func generateStorageProfile(vmSpec Spec) (*compute.StorageProfile, error) {
 		},
 	}
 
-	log.Println("HI GENERATING STORAGE PROFILE")
-	log.Println("HI publisher: ", vmSpec.Image.Marketplace.Publisher)
-	log.Println("HI offer: ", vmSpec.Image.Marketplace.Offer)
-	log.Println("HI sku: ", vmSpec.Image.Marketplace.SKU)
+	// enable ephemeral OS
+	if vmSpec.OSDisk.DiffDiskSettings != nil {
+		sku, err := s.ResourceSKUCache.Get(ctx, vmSpec.Size, resourceskus.VirtualMachines)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to get find vm sku %s in compute api", vmSpec.Size)
+		}
+
+		if !sku.HasCapability(resourceskus.EphemeralOSDisk) {
+			return nil, fmt.Errorf("vm size %s does not support ephemeral os. select a different vm size or disable ephemeral os", vmSpec.Size)
+		}
+
+		storageProfile.OsDisk.DiffDiskSettings = &compute.DiffDiskSettings{
+			Option: compute.DiffDiskOptions(vmSpec.OSDisk.DiffDiskSettings.Option),
+		}
+	}
+
+	dataDisks := []compute.DataDisk{}
+	for _, disk := range vmSpec.DataDisks {
+		dataDisks = append(dataDisks, compute.DataDisk{
+			CreateOption: compute.DiskCreateOptionTypesEmpty,
+			DiskSizeGB:   to.Int32Ptr(disk.DiskSizeGB),
+			Lun:          disk.Lun,
+			Name:         to.StringPtr(azure.GenerateDataDiskName(vmSpec.Name, disk.NameSuffix)),
+		})
+	}
+	storageProfile.DataDisks = &dataDisks
+
 	imageRef, err := converters.ImageToSDK(vmSpec.Image)
 	if err != nil {
 		return nil, err
@@ -373,7 +366,7 @@ func generateStorageProfile(vmSpec Spec) (*compute.StorageProfile, error) {
 func getSpotVMOptions(spotVMOptions *infrav1.SpotVMOptions) (compute.VirtualMachinePriorityTypes, compute.VirtualMachineEvictionPolicyTypes, *compute.BillingProfile, error) {
 	// Spot VM not requested, return zero values to apply defaults
 	if spotVMOptions == nil {
-		return compute.VirtualMachinePriorityTypes(""), compute.VirtualMachineEvictionPolicyTypes(""), nil, nil
+		return "", "", nil, nil
 	}
 	var billingProfile *compute.BillingProfile
 	if spotVMOptions.MaxPrice != nil {
@@ -386,20 +379,4 @@ func getSpotVMOptions(spotVMOptions *infrav1.SpotVMOptions) (compute.VirtualMach
 		}
 	}
 	return compute.Spot, compute.Deallocate, billingProfile, nil
-}
-*/
-
-// GenerateRandomString returns a URL-safe, base64 encoded
-// securely generated random string.
-// It will return an error if the system's secure random
-// number generator fails to function correctly, in which
-// case the caller should not continue.
-func GenerateRandomString(n int) (string, error) {
-	b := make([]byte, n)
-	_, err := rand.Read(b)
-	// Note that err == nil only if we read len(b) bytes.
-	if err != nil {
-		return "", err
-	}
-	return base64.URLEncoding.EncodeToString(b), err
 }

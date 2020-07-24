@@ -17,39 +17,42 @@ limitations under the License.
 package networkinterfaces
 
 import (
-	"sigs.k8s.io/cluster-api-provider-azure/cloud/scope"
+	"github.com/go-logr/logr"
+	azure "sigs.k8s.io/cluster-api-provider-azure/cloud"
 	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/inboundnatrules"
-	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/internalloadbalancers"
+	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/loadbalancers"
 	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/publicips"
-	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/publicloadbalancers"
 	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/resourceskus"
 	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/subnets"
 )
 
+// NICScope defines the scope interface for a network interfaces service.
+type NICScope interface {
+	azure.ClusterDescriber
+	logr.Logger
+	NICSpecs() []azure.NICSpec
+}
+
 // Service provides operations on azure resources
 type Service struct {
-	Scope        *scope.ClusterScope
-	MachineScope *scope.MachineScope
+	Scope NICScope
 	Client
-	SubnetsClient               subnets.Client
-	PublicLoadBalancersClient   publicloadbalancers.Client
-	InternalLoadBalancersClient internalloadbalancers.Client
-	PublicIPsClient             publicips.Client
-	InboundNATRulesClient       inboundnatrules.Client
-	ResourceSkusClient          resourceskus.Client
+	SubnetsClient         subnets.Client
+	LoadBalancersClient   loadbalancers.Client
+	PublicIPsClient       publicips.Client
+	InboundNATRulesClient inboundnatrules.Client
+	ResourceSKUCache      *resourceskus.Cache
 }
 
 // NewService creates a new service.
-func NewService(scope *scope.ClusterScope, machineScope *scope.MachineScope) *Service {
+func NewService(scope NICScope, skuCache *resourceskus.Cache) *Service {
 	return &Service{
-		Scope:                       scope,
-		MachineScope:                machineScope,
-		Client:                      NewClient(scope),
-		SubnetsClient:               subnets.NewClient(scope),
-		PublicLoadBalancersClient:   publicloadbalancers.NewClient(scope),
-		InternalLoadBalancersClient: internalloadbalancers.NewClient(scope),
-		PublicIPsClient:             publicips.NewClient(scope),
-		InboundNATRulesClient:       inboundnatrules.NewClient(scope),
-		ResourceSkusClient:          resourceskus.NewClient(scope),
+		Scope:                 scope,
+		Client:                NewClient(scope),
+		SubnetsClient:         subnets.NewClient(scope),
+		LoadBalancersClient:   loadbalancers.NewClient(scope),
+		PublicIPsClient:       publicips.NewClient(scope),
+		InboundNATRulesClient: inboundnatrules.NewClient(scope),
+		ResourceSKUCache:      skuCache,
 	}
 }

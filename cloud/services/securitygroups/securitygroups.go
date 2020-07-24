@@ -18,19 +18,13 @@ package securitygroups
 
 import (
 	"context"
-	"strconv"
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/network/mgmt/network"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/pkg/errors"
-	"k8s.io/klog"
+	infrav1 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	azure "sigs.k8s.io/cluster-api-provider-azure/cloud"
-)
-
-const (
-	apiServerRule = "apiServerRule"
-	sshRule       = "sshRule"
 )
 
 // Spec specification for network security groups
@@ -62,33 +56,45 @@ func (s *Service) Reconcile(ctx context.Context, spec interface{}) error {
 		securityRules = *securityGroup.SecurityRules
 	}
 
-	defaultRules := make(map[string]network.SecurityRule, 0)
-	defaultRules[sshRule] = getRule("allow_ssh", "22", 100)
-	defaultRules[apiServerRule] = getRule("allow_6443", strconv.Itoa(int(s.Scope.APIServerPort())), 101)
+	ingressRules := make(map[string]network.SecurityRule, 0)
 
 	if nsgSpec.IsControlPlane {
-		if nsgExists {
-			// Check if the expected rules are present
-			update := false
-			for _, rule := range defaultRules {
-				if !ruleExists(securityRules, rule) {
-					update = true
-					securityRules = append(securityRules, rule)
-				}
+		// Add any specified ingress rules from controlplane security group spec
+		cpSubnet := s.Scope.ControlPlaneSubnet()
+		if cpSubnet != nil && len(cpSubnet.SecurityGroup.IngressRules) > 0 {
+			for _, ingressRule := range cpSubnet.SecurityGroup.IngressRules {
+				ingressRules[ingressRule.Name] = newIngressSecurityRule(*ingressRule)
 			}
-			if !update {
-				// Skip update for control-plane NSG as the required default rules are present
-				klog.V(2).Infof("security group %s exists and no default rules are missing, skipping update", nsgSpec.Name)
-				return nil
-			}
-		} else {
-			klog.V(2).Infof("applying missing default rules for control plane NSG %s", nsgSpec.Name)
-			securityRules = append(securityRules, defaultRules[sshRule], defaultRules[apiServerRule])
 		}
-	} else if nsgExists {
-		// Skip update for node NSG as no default rules are required
-		klog.V(2).Infof("security group %s exists and no default rules are required, skipping update", nsgSpec.Name)
-		return nil
+	} else {
+		// Add any specified ingress rules from node security group spec
+		nodeSubnet := s.Scope.NodeSubnet()
+		if nodeSubnet != nil && len(nodeSubnet.SecurityGroup.IngressRules) > 0 {
+			for _, ingressRule := range nodeSubnet.SecurityGroup.IngressRules {
+				ingressRules[ingressRule.Name] = newIngressSecurityRule(*ingressRule)
+			}
+		}
+	}
+
+	if nsgExists {
+		// Check if the expected rules are present
+		update := false
+		for _, rule := range ingressRules {
+			if !ruleExists(securityRules, rule) {
+				update = true
+				securityRules = append(securityRules, rule)
+			}
+		}
+		if !update {
+			// Skip update for control-plane NSG as the required default rules are present
+			s.Scope.V(2).Info("security group exists and no default rules are missing, skipping update", "security group", nsgSpec.Name)
+			return nil
+		}
+	} else {
+		s.Scope.V(2).Info("applying missing default rules for control plane security group", "security group", nsgSpec.Name)
+		for _, rule := range ingressRules {
+			securityRules = append(securityRules, rule)
+		}
 	}
 
 	sg := network.SecurityGroup{
@@ -101,13 +107,13 @@ func (s *Service) Reconcile(ctx context.Context, spec interface{}) error {
 		// We append the existing NSG etag to the header to ensure we only apply the updates if the NSG has not been modified.
 		sg.Etag = securityGroup.Etag
 	}
-	klog.V(2).Infof("creating security group %s", nsgSpec.Name)
+	s.Scope.V(2).Info("creating security group", "security group", nsgSpec.Name)
 	err = s.Client.CreateOrUpdate(ctx, s.Scope.ResourceGroup(), nsgSpec.Name, sg)
 	if err != nil {
 		return errors.Wrapf(err, "failed to create security group %s in resource group %s", nsgSpec.Name, s.Scope.ResourceGroup())
 	}
 
-	klog.V(2).Infof("created security group %s", nsgSpec.Name)
+	s.Scope.V(2).Info("created security group", "security group", nsgSpec.Name)
 	return err
 }
 
@@ -134,20 +140,31 @@ func ruleExists(rules []network.SecurityRule, rule network.SecurityRule) bool {
 	return false
 }
 
-func getRule(name, destinationPort string, priority int32) network.SecurityRule {
-	return network.SecurityRule{
-		Name: to.StringPtr(name),
+func newIngressSecurityRule(ingress infrav1.IngressRule) network.SecurityRule {
+	secRule := network.SecurityRule{
+		Name: to.StringPtr(ingress.Name),
 		SecurityRulePropertiesFormat: &network.SecurityRulePropertiesFormat{
-			Protocol:                 network.SecurityRuleProtocolTCP,
-			SourceAddressPrefix:      to.StringPtr("*"),
-			SourcePortRange:          to.StringPtr("*"),
-			DestinationAddressPrefix: to.StringPtr("*"),
-			DestinationPortRange:     to.StringPtr(destinationPort),
+			Description:              to.StringPtr(ingress.Description),
+			SourceAddressPrefix:      ingress.Source,
+			SourcePortRange:          ingress.SourcePorts,
+			DestinationAddressPrefix: ingress.Destination,
+			DestinationPortRange:     ingress.DestinationPorts,
 			Access:                   network.SecurityRuleAccessAllow,
 			Direction:                network.SecurityRuleDirectionInbound,
-			Priority:                 to.Int32Ptr(priority),
+			Priority:                 to.Int32Ptr(ingress.Priority),
 		},
 	}
+
+	switch ingress.Protocol {
+	case infrav1.SecurityGroupProtocolAll:
+		secRule.SecurityRulePropertiesFormat.Protocol = network.SecurityRuleProtocolAsterisk
+	case infrav1.SecurityGroupProtocolTCP:
+		secRule.SecurityRulePropertiesFormat.Protocol = network.SecurityRuleProtocolTCP
+	case infrav1.SecurityGroupProtocolUDP:
+		secRule.SecurityRulePropertiesFormat.Protocol = network.SecurityRuleProtocolUDP
+	}
+
+	return secRule
 }
 
 // Delete deletes the network security group with the provided name.
@@ -156,7 +173,7 @@ func (s *Service) Delete(ctx context.Context, spec interface{}) error {
 	if !ok {
 		return errors.New("invalid security groups specification")
 	}
-	klog.V(2).Infof("deleting security group %s", nsgSpec.Name)
+	s.Scope.V(2).Info("deleting security group", "security group", nsgSpec.Name)
 	err := s.Client.Delete(ctx, s.Scope.ResourceGroup(), nsgSpec.Name)
 	if err != nil && azure.ResourceNotFound(err) {
 		// already deleted
@@ -166,6 +183,6 @@ func (s *Service) Delete(ctx context.Context, spec interface{}) error {
 		return errors.Wrapf(err, "failed to delete security group %s in resource group %s", nsgSpec.Name, s.Scope.ResourceGroup())
 	}
 
-	klog.V(2).Infof("deleted security group %s", nsgSpec.Name)
+	s.Scope.V(2).Info("successfully deleted security group", "security group", nsgSpec.Name)
 	return nil
 }
