@@ -53,10 +53,13 @@ func (s *Service) Reconcile(ctx context.Context) error {
 				}
 			} else if azure.ResourceNotFound(err) {
 				s.Scope.V(2).Info("internalLB not found in RG", "internal lb", lbSpec.Name, "resource group", s.Scope.ResourceGroup())
-				privateIP, err = s.getAvailablePrivateIP(ctx, s.Scope.Vnet().ResourceGroup, s.Scope.Vnet().Name, lbSpec.SubnetCidr, lbSpec.PrivateIPAddress)
-				if err != nil {
-					return err
-				}
+				privateIP = "10.0.0.100"
+				/*
+					privateIP, err = s.getAvailablePrivateIP(ctx, s.Scope.Vnet().ResourceGroup, s.Scope.Vnet().Name, lbSpec.SubnetCidr, lbSpec.PrivateIPAddress)
+					if err != nil {
+						return err
+					}
+				*/
 				s.Scope.V(2).Info("setting internal load balancer IP", "private ip", privateIP)
 			} else {
 				return errors.Wrap(err, "failed to look for existing internal LB")
@@ -88,7 +91,7 @@ func (s *Service) Reconcile(ctx context.Context) error {
 		}
 
 		lb := network.LoadBalancer{
-			Sku:      &network.LoadBalancerSku{Name: network.LoadBalancerSkuNameStandard},
+			Sku:      &network.LoadBalancerSku{Name: network.LoadBalancerSkuNameBasic},
 			Location: to.StringPtr(s.Scope.Location()),
 			Tags: converters.TagsToMap(infrav1.Build(infrav1.BuildParams{
 				ClusterName: s.Scope.ClusterName(),
@@ -133,7 +136,6 @@ func (s *Service) Reconcile(ctx context.Context) error {
 					Name: to.StringPtr(probeName),
 					ProbePropertiesFormat: &network.ProbePropertiesFormat{
 						Protocol:          network.ProbeProtocolTCP,
-						RequestPath:       to.StringPtr("/healthz"),
 						Port:              to.Int32Ptr(lbSpec.APIServerPort),
 						IntervalInSeconds: to.Int32Ptr(15),
 						NumberOfProbes:    to.Int32Ptr(4),
