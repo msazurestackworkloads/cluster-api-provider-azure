@@ -126,7 +126,7 @@ func (s *Service) Reconcile(ctx context.Context, spec interface{}) error {
 		},
 		VirtualMachineScaleSetProperties: &compute.VirtualMachineScaleSetProperties{
 			UpgradePolicy: &compute.UpgradePolicy{
-				Mode: compute.UpgradeModeManual,
+				Mode: "Manual",
 			},
 			VirtualMachineProfile: &compute.VirtualMachineScaleSetVMProfile{
 				OsProfile: &compute.VirtualMachineScaleSetOSProfile{
@@ -241,9 +241,9 @@ func (s *Service) generateStorageProfile(ctx context.Context, vmssSpec Spec, sku
 			return nil, fmt.Errorf("vm size %s does not support ephemeral os. select a different vm size or disable ephemeral os", vmssSpec.Sku)
 		}
 
-		storageProfile.OsDisk.DiffDiskSettings = &compute.DiffDiskSettings{
-			Option: compute.DiffDiskOptions(vmssSpec.OSDisk.DiffDiskSettings.Option),
-		}
+		// storageProfile.OsDisk.DiffDiskSettings = &compute.DiffDiskSettings{
+		// 	Option: compute.DiffDiskOptions(vmssSpec.OSDisk.DiffDiskSettings.Option),
+		// }
 	}
 
 	dataDisks := []compute.VirtualMachineScaleSetDataDisk{}

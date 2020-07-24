@@ -343,7 +343,7 @@ func TestService_Reconcile(t *testing.T) {
 					},
 					VirtualMachineScaleSetProperties: &compute.VirtualMachineScaleSetProperties{
 						UpgradePolicy: &compute.UpgradePolicy{
-							Mode: compute.UpgradeModeManual,
+							Mode: "Manual",
 						},
 						VirtualMachineProfile: &compute.VirtualMachineScaleSetVMProfile{
 							OsProfile: &compute.VirtualMachineScaleSetOSProfile{
@@ -478,7 +478,7 @@ func TestService_Reconcile(t *testing.T) {
 					},
 					VirtualMachineScaleSetProperties: &compute.VirtualMachineScaleSetProperties{
 						UpgradePolicy: &compute.UpgradePolicy{
-							Mode: compute.UpgradeModeManual,
+							Mode: "Manual",
 						},
 						VirtualMachineProfile: &compute.VirtualMachineScaleSetVMProfile{
 							OsProfile: &compute.VirtualMachineScaleSetOSProfile{
@@ -614,7 +614,7 @@ func TestService_Reconcile(t *testing.T) {
 					},
 					VirtualMachineScaleSetProperties: &compute.VirtualMachineScaleSetProperties{
 						UpgradePolicy: &compute.UpgradePolicy{
-							Mode: compute.UpgradeModeManual,
+							Mode: "Manual",
 						},
 						VirtualMachineProfile: &compute.VirtualMachineScaleSetVMProfile{
 							OsProfile: &compute.VirtualMachineScaleSetOSProfile{
@@ -677,7 +677,7 @@ func TestService_Reconcile(t *testing.T) {
 					},
 					VirtualMachineScaleSetUpdateProperties: &compute.VirtualMachineScaleSetUpdateProperties{
 						UpgradePolicy: &compute.UpgradePolicy{
-							Mode: compute.UpgradeModeManual,
+							Mode: "Manual",
 						},
 						VirtualMachineProfile: &compute.VirtualMachineScaleSetUpdateVMProfile{
 							OsProfile: &compute.VirtualMachineScaleSetUpdateOSProfile{
@@ -849,7 +849,7 @@ func TestGetVMSSUpdateFromVMSS(t *testing.T) {
 		},
 		VirtualMachineScaleSetProperties: &compute.VirtualMachineScaleSetProperties{
 			UpgradePolicy: &compute.UpgradePolicy{
-				Mode: compute.UpgradeModeManual,
+				Mode: "Manual",
 			},
 			VirtualMachineProfile: &compute.VirtualMachineScaleSetVMProfile{
 				OsProfile: &compute.VirtualMachineScaleSetOSProfile{
@@ -881,7 +881,7 @@ func TestGetVMSSUpdateFromVMSS(t *testing.T) {
 		},
 		VirtualMachineScaleSetUpdateProperties: &compute.VirtualMachineScaleSetUpdateProperties{
 			UpgradePolicy: &compute.UpgradePolicy{
-				Mode: compute.UpgradeModeManual,
+				Mode: "Manual",
 			},
 			VirtualMachineProfile: &compute.VirtualMachineScaleSetUpdateVMProfile{
 				OsProfile: &compute.VirtualMachineScaleSetUpdateOSProfile{
