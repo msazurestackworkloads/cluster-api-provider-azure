@@ -50,7 +50,7 @@ The cluster will now start provisioning. You can check status with:
 ```bash
 kubectl get cluster --all-namespaces
 ```
-After the first control plane node is up and running, we can retrieve the worload cluster Kubeconfig: 
+After the first control plane node is up and running, we can retrieve the workload cluster Kubeconfig: 
 ```bash
 kubectl get secrets capz-cluster2-kubeconfig -o json | jq -r .data.value | base64 --decode > ./kubeconfig
 ```
