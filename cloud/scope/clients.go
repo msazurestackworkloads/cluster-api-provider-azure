@@ -18,7 +18,6 @@ package scope
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strings"
 
@@ -57,19 +56,14 @@ func (c *AzureClients) setCredentials(subscriptionID string) error {
 	c.SubscriptionID = subID
 
 	armEndpoint := os.Getenv("AZURE_ARM_ENDPOINT")
-	log.Println("HERE armEndpoint: ", armEndpoint)
 	env, err := azure.EnvironmentFromURL(armEndpoint)
 	if err != nil {
-		log.Println("HERE error getting environment from armEndpoint: ", armEndpoint)
 		return err
 	}
 
 	c.ResourceManagerEndpoint = env.ResourceManagerEndpoint
-	log.Println("HERE c.ResourceManagerEndpoint: ", c.ResourceManagerEndpoint)
 	c.ResourceManagerVMDNSSuffix = GetAzureDNSZoneForEnvironment("AzureStackCloud")
-	log.Println("HERE c.ResourceManagerVMDNSSuffix: ", c.ResourceManagerVMDNSSuffix)
 	c.Authorizer, err = getAuthorizerForResource(env)
-	log.Println("HERE c.Authorizer: ", c.Authorizer)
 	return err
 }
 
@@ -122,16 +116,10 @@ func getAuthorizerForResource(env azure.Environment) (autorest.Authorizer, error
 	clientID := os.Getenv("AZURE_CLIENT_ID")
 	clientSecret := os.Getenv("AZURE_CLIENT_SECRET")
 	tenantID := os.Getenv("AZURE_TENANT_ID")
-	log.Println("HERE client id: ", clientID)
-	log.Println("HERE client secret: ", clientSecret)
-	log.Println("HERE tenant id: ", tenantID)
 
 	tokenAudience := env.TokenAudience
-	log.Println("HERE TokenAudience: ", env.TokenAudience)
-	log.Println("HERE ActiveDirectoryEndpoint: ", env.ActiveDirectoryEndpoint)
 
 	identitySystem := os.Getenv("IDENTITY_SYSTEM")
-	log.Println("HERE identity system: ", identitySystem)
 	if identitySystem == "adfs" {
 		oauthConfig, err = adal.NewOAuthConfig(
 			env.ActiveDirectoryEndpoint, "adfs")
@@ -149,8 +137,6 @@ func getAuthorizerForResource(env azure.Environment) (autorest.Authorizer, error
 		clientSecret,
 		tokenAudience)
 
-	log.Println("HERE generated token")
 	a = autorest.NewBearerAuthorizer(token)
-	log.Println("HERE generated authorizer")
 	return a, err
 }

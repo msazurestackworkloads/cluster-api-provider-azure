@@ -197,17 +197,17 @@ func (s *Service) Reconcile(ctx context.Context, spec interface{}) error {
 		*/
 	}
 
-	log.Println("HI CREATING VM: ", vmSpec.Name)
+	log.Println("CREATING VM: ", vmSpec.Name)
 	err = s.Client.CreateOrUpdate(
 		ctx,
 		s.Scope.ResourceGroup(),
 		vmSpec.Name,
 		virtualMachine)
 	if err != nil {
-		log.Println("HI CREATING VM ERROR: ", vmSpec.Name)
+		log.Println("CREATING VM ERROR: ", vmSpec.Name)
 		return errors.Wrapf(err, "cannot create VM")
 	}
-	log.Println("HI CREATING VM FINISHED: ", vmSpec.Name)
+	log.Println("CREATING VM FINISHED: ", vmSpec.Name)
 
 	s.Scope.V(2).Info("successfully created VM", "vm", vmSpec.Name)
 	return nil
