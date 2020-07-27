@@ -68,6 +68,20 @@ spec:
           name: cloud-config-stack
           readOnly: true
     files:
+    - content: |
+        sudo cp /var/lib/waagent/Certificates.pem /usr/local/share/ca-certificates/azsCertificate.crt
+        sudo update-ca-certificates
+        sudo echo 'Environment=AZURE_ENVIRONMENT_FILEPATH=/etc/kubernetes/azurestackcloud.json' \ >> /usr/lib/systemd/system/kubelet.service.d/10-kubeadm.conf
+        sudo systemctl daemon-reload
+        sudo systemctl restart kubelet
+      owner: root:root
+      path: /etc/kubernetes/prekubeadmcommands.sh
+      permissions: "0644"
+    - content: |
+        "sudo sed -i 's/imagePullPolicy: IfNotPresent/imagePullPolicy: IfNotPresent\\n    env:\\n    - name: AZURE_ENVIRONMENT_FILEPATH\\n      value: \\/etc\\/kubernetes\\/azurestackcloud.json/g' /etc/kubernetes/manifests/kube-controller-manager.yaml"
+      owner: root:root
+      path: /etc/kubernetes/postkubeadmcommands.sh
+      permissions: "0644"
     - content: "{\n  \"cloud\": \"${AZURE_ENVIRONMENT}\",\n  \"tenantId\": \"adfs\",\n
         \ \"subscriptionId\": \"${AZURE_SUBSCRIPTION_ID}\",\n  \"aadClientId\": \"${AZURE_CLIENT_ID}\",\n
         \ \"aadClientSecret\": \"${AZURE_CLIENT_SECRET}\",\n  \"resourceGroup\": \"${AZURE_RESOURCE_GROUP}\",\n
@@ -122,16 +136,11 @@ spec:
           cloud-provider: azure
         name: '{{ ds.meta_data["local_hostname"] }}'
     postKubeadmCommands:
-    - 'sudo sed -i ''s/imagePullPolicy: IfNotPresent/imagePullPolicy: IfNotPresent\n    env:\n    -
-      name: AZURE_ENVIRONMENT_FILEPATH\n      value: \/etc\/kubernetes\/azurestackcloud.json/g''
-      /etc/kubernetes/manifests/kube-controller-manager.yaml'
+    - hi loading post script
+    - sudo bash /etc/kubernetes/postkubeadmcommands.sh
     preKubeadmCommands:
-    - sudo cp /var/lib/waagent/Certificates.pem /usr/local/share/ca-certificates/azsCertificate.crt
-    - sudo update-ca-certificates
-    - sudo echo 'Environment=AZURE_ENVIRONMENT_FILEPATH=/etc/kubernetes/azurestackcloud.json'
-      \ >> /usr/lib/systemd/system/kubelet.service.d/10-kubeadm.conf
-    - sudo systemctl daemon-reload
-    - sudo systemctl restart kubelet
+    - hi loading pre script
+    - sudo bash /etc/kubernetes/prekubeadmcommands.sh
     useExperimentalRetryJoin: true
   replicas: ${CONTROL_PLANE_MACHINE_COUNT}
   version: ${KUBERNETES_VERSION}
@@ -216,6 +225,20 @@ spec:
     spec:
       files:
       - content: |
+          sudo cp /var/lib/waagent/Certificates.pem /usr/local/share/ca-certificates/azsCertificate.crt
+          sudo update-ca-certificates
+          sudo echo 'Environment=AZURE_ENVIRONMENT_FILEPATH=/etc/kubernetes/azurestackcloud.json' \ >> /usr/lib/systemd/system/kubelet.service.d/10-kubeadm.conf
+          sudo systemctl daemon-reload
+          sudo systemctl restart kubelet
+        owner: root:root
+        path: /etc/kubernetes/prekubeadmcommands.sh
+        permissions: "0644"
+      - content: |
+          "sudo sed -i 's/imagePullPolicy: IfNotPresent/imagePullPolicy: IfNotPresent\\n    env:\\n    - name: AZURE_ENVIRONMENT_FILEPATH\\n      value: \\/etc\\/kubernetes\\/azurestackcloud.json/g' /etc/kubernetes/manifests/kube-controller-manager.yaml"
+        owner: root:root
+        path: /etc/kubernetes/postkubeadmcommands.sh
+        permissions: "0644"
+      - content: |
           {
             "cloud": "${AZURE_ENVIRONMENT}",
             "tenantId": "adfs",
@@ -274,13 +297,8 @@ spec:
             cloud-provider: azure
           name: '{{ ds.meta_data["local_hostname"] }}'
       postKubeadmCommands:
-      - 'sudo sed -i ''s/imagePullPolicy: IfNotPresent/imagePullPolicy: IfNotPresent\n    env:\n    -
-        name: AZURE_ENVIRONMENT_FILEPATH\n      value: \/etc\/kubernetes\/azurestackcloud.json/g''
-        /etc/kubernetes/manifests/kube-controller-manager.yaml'
+      - hi loading post script
+      - sudo bash /etc/kubernetes/postkubeadmcommands.sh
       preKubeadmCommands:
-      - sudo cp /var/lib/waagent/Certificates.pem /usr/local/share/ca-certificates/azsCertificate.crt
-      - sudo update-ca-certificates
-      - sudo echo 'Environment=AZURE_ENVIRONMENT_FILEPATH=/etc/kubernetes/azurestackcloud.json'
-        \ >> /usr/lib/systemd/system/kubelet.service.d/10-kubeadm.conf
-      - sudo systemctl daemon-reload
-      - sudo systemctl restart kubelet
+      - hi loading pre script
+      - sudo bash /etc/kubernetes/prekubeadmcommands.sh
