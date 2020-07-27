@@ -1,7 +1,7 @@
 {
   "name": "azure",
   "config": {
-    "image": "gcr.io/cluster-api-azure-controller-amd64:dev",
+    "image": "gcr.io/k8s-staging-cluster-api-azure/cluster-api-azure-controller",
     "live_reload_deps": [
       "main.go",
       "go.mod",
