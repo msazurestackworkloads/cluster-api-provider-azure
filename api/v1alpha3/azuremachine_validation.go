@@ -183,7 +183,7 @@ func validateStorageAccountType(storageAccountType string, fieldPath *field.Path
 		return allErrs
 	}
 
-	possibleDiskStorageAccountTypesValues := []string{"Premium_LRS", "Standard_LRS", "StandardSSD_LRS", "UltraSSD_LRS"}
+	possibleDiskStorageAccountTypesValues := []string{"Premium_LRS", "Standard_LRS"}
 	for _, possibleStorageAccountType := range possibleDiskStorageAccountTypesValues {
 		if string(possibleStorageAccountType) == storageAccountType {
 			return allErrs
