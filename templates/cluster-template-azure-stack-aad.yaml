@@ -69,8 +69,32 @@ spec:
           readOnly: true
         - hostPath: /etc/kubernetes/prekubeadmcommands.sh
           mountPath: /etc/kubernetes/prekubeadmcommands.sh
-          name: cloud-config-stack
+          name: prekubeadmcommands
           readOnly: true
+        - hostPath: /etc/kubernetes/postkubeadmcommands.sh
+          mountPath: /etc/kubernetes/postkubeadmcommands.sh
+          name: postkubeadmcommands
+          readOnly: true
+      etcd:
+        local:
+          dataDir: /var/lib/etcddisk/etcd
+    diskSetup:
+      filesystems:
+      - device: /dev/disk/azure/scsi1/lun0
+        extraOpts:
+        - -E
+        - lazy_itable_init=1,lazy_journal_init=1
+        filesystem: ext4
+        label: etcd_disk
+      - device: ephemeral0.1
+        filesystem: ext4
+        label: ephemeral0
+        replaceFS: ntfs
+      partitions:
+      - device: /dev/disk/azure/scsi1/lun0
+        layout: true
+        overwrite: false
+        tableType: gpt
     files:
     - content: |
         sudo cp /var/lib/waagent/Certificates.pem /usr/local/share/ca-certificates/azsCertificate.crt
@@ -139,11 +163,21 @@ spec:
           cloud-provider: azure
         name: '{{ ds.meta_data["local_hostname"] }}'
     postKubeadmCommands:
-    - hi loading post script
+    - echo 'hi loading post script'
+    - echo 'This is kube-controller-manager.yaml'
+    - sudo cat /etc/kubernetes/manifests/kube-controller-manager.yaml
+    - echo 'This is azurestackcloud.json'
+    - sudo cat /etc/kubernetes/azurestackcloud.json
+    - echo 'Now running post script'
     - sudo bash /etc/kubernetes/postkubeadmcommands.sh
+    - echo 'hi finished loading post script'
     preKubeadmCommands:
-    - hi loading pre script
+    - echo 'hi loading pre script'
     - sudo bash /etc/kubernetes/prekubeadmcommands.sh
+    - echo 'hi finished loading pre script'
+    mounts:
+    - - LABEL=etcd_disk
+      - /var/lib/etcddisk
     useExperimentalRetryJoin: true
   replicas: ${CONTROL_PLANE_MACHINE_COUNT}
   version: ${KUBERNETES_VERSION}
@@ -162,6 +196,10 @@ spec:
           publisher: AzureStack
           sku: capz-test
           version: latest
+      dataDisks:
+      - diskSizeGB: 256
+        lun: 0
+        nameSuffix: etcddisk
       location: ${AZURE_LOCATION}
       osDisk:
         diskSizeGB: 128
@@ -299,8 +337,10 @@ spec:
             cloud-provider: azure
           name: '{{ ds.meta_data["local_hostname"] }}'
       postKubeadmCommands:
-      - hi loading post script
+      - echo 'hi loading post script'
       - sudo bash /etc/kubernetes/postkubeadmcommands.sh
+      - echo 'hi finished loading post script'
       preKubeadmCommands:
-      - hi loading pre script
+      - echo 'hi loading pre script'
       - sudo bash /etc/kubernetes/prekubeadmcommands.sh
+      - echo 'hi finished loading pre script'
