@@ -164,11 +164,6 @@ spec:
         name: '{{ ds.meta_data["local_hostname"] }}'
     postKubeadmCommands:
     - echo 'hi loading post script'
-    - echo 'This is kube-controller-manager.yaml'
-    - sudo cat /etc/kubernetes/manifests/kube-controller-manager.yaml
-    - echo 'This is azurestackcloud.json'
-    - sudo cat /etc/kubernetes/azurestackcloud.json
-    - echo 'Now running post script'
     - sudo bash /etc/kubernetes/postkubeadmcommands.sh
     - echo 'hi finished loading post script'
     preKubeadmCommands:
