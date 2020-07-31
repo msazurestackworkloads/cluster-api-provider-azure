@@ -106,7 +106,7 @@ spec:
       path: /etc/kubernetes/prekubeadmcommands.sh
       permissions: "0644"
     - content: |
-        "sudo sed -i 's/imagePullPolicy: IfNotPresent/imagePullPolicy: IfNotPresent\\n    env:\\n    - name: AZURE_ENVIRONMENT_FILEPATH\\n      value: \\/etc\\/kubernetes\\/azurestackcloud.json/g' /etc/kubernetes/manifests/kube-controller-manager.yaml"
+        sudo sed -i 's/imagePullPolicy: IfNotPresent/imagePullPolicy: IfNotPresent\\n    env:\\n    - name: AZURE_ENVIRONMENT_FILEPATH\\n      value: \\/etc\\/kubernetes\\/azurestackcloud.json/g' /etc/kubernetes/manifests/kube-controller-manager.yaml
       owner: root:root
       path: /etc/kubernetes/postkubeadmcommands.sh
       permissions: "0644"
@@ -164,6 +164,11 @@ spec:
         name: '{{ ds.meta_data["local_hostname"] }}'
     postKubeadmCommands:
     - echo 'hi loading post script'
+    - echo 'This is kube-controller-manager.yaml'
+    - sudo cat /etc/kubernetes/manifests/kube-controller-manager.yaml
+    - echo 'This is azurestackcloud.json'
+    - sudo cat /etc/kubernetes/azurestackcloud.json
+    - echo 'Now running post script'
     - sudo bash /etc/kubernetes/postkubeadmcommands.sh
     - echo 'hi finished loading post script'
     preKubeadmCommands:
@@ -270,7 +275,7 @@ spec:
         path: /etc/kubernetes/prekubeadmcommands.sh
         permissions: "0644"
       - content: |
-          "sudo sed -i 's/imagePullPolicy: IfNotPresent/imagePullPolicy: IfNotPresent\\n    env:\\n    - name: AZURE_ENVIRONMENT_FILEPATH\\n      value: \\/etc\\/kubernetes\\/azurestackcloud.json/g' /etc/kubernetes/manifests/kube-controller-manager.yaml"
+          sudo sed -i 's/imagePullPolicy: IfNotPresent/imagePullPolicy: IfNotPresent\\n    env:\\n    - name: AZURE_ENVIRONMENT_FILEPATH\\n      value: \\/etc\\/kubernetes\\/azurestackcloud.json/g' /etc/kubernetes/manifests/kube-controller-manager.yaml
         owner: root:root
         path: /etc/kubernetes/postkubeadmcommands.sh
         permissions: "0644"
