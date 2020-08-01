@@ -25,7 +25,6 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/pkg/errors"
 	"k8s.io/klog"
-	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/resourceskus"
 	infrav1exp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 
 	infrav1 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
@@ -71,7 +70,7 @@ func (s *Service) Get(ctx context.Context, vmssSpec *Spec) (*infrav1exp.VMSS, er
 }
 
 func (s *Service) Reconcile(ctx context.Context, spec interface{}) error {
-	log.Println("calliou reconcile vmss")
+	log.Println("HERE reconcile vmss")
 	vmssSpec, ok := spec.(*Spec)
 	if !ok {
 		return errors.New("invalid VMSS specification")
@@ -84,18 +83,18 @@ func (s *Service) Reconcile(ctx context.Context, spec interface{}) error {
 	}
 	vmssSpec.AdditionalTags[infrav1.ClusterAzureCloudProviderTagKey(vmssSpec.MachinePoolName)] = string(infrav1.ResourceLifecycleOwned)
 
-	sku, err := s.ResourceSKUCache.Get(ctx, vmssSpec.Sku, resourceskus.VirtualMachines)
-	if err != nil {
-		return errors.Wrapf(err, "failed to get find vm sku %s in compute api", vmssSpec.Sku)
-	}
+	// sku, err := s.ResourceSKUCache.Get(ctx, vmssSpec.Sku, resourceskus.VirtualMachines)
+	// if err != nil {
+	// 	return errors.Wrapf(err, "failed to get find vm sku %s in compute api", vmssSpec.Sku)
+	// }
 
-	if vmssSpec.AcceleratedNetworking == nil {
-		// set accelerated networking to the capability of the VMSize
-		accelNet := sku.HasCapability(resourceskus.AcceleratedNetworking)
-		vmssSpec.AcceleratedNetworking = &accelNet
-	}
+	// if vmssSpec.AcceleratedNetworking == nil {
+	// 	// set accelerated networking to the capability of the VMSize
+	// 	accelNet := sku.HasCapability(resourceskus.AcceleratedNetworking)
+	// 	vmssSpec.AcceleratedNetworking = &accelNet
+	// }
 
-	storageProfile, err := s.generateStorageProfile(ctx, *vmssSpec, sku)
+	storageProfile, err := s.generateStorageProfile(ctx, *vmssSpec)
 	if err != nil {
 		return err
 	}
@@ -225,7 +224,7 @@ func (s *Service) Delete(ctx context.Context, spec interface{}) error {
 }
 
 // generateStorageProfile generates a pointer to a compute.VirtualMachineScaleSetStorageProfile which can utilized for VM creation.
-func (s *Service) generateStorageProfile(ctx context.Context, vmssSpec Spec, sku resourceskus.SKU) (*compute.VirtualMachineScaleSetStorageProfile, error) {
+func (s *Service) generateStorageProfile(ctx context.Context, vmssSpec Spec) (*compute.VirtualMachineScaleSetStorageProfile, error) {
 	storageProfile := &compute.VirtualMachineScaleSetStorageProfile{
 		OsDisk: &compute.VirtualMachineScaleSetOSDisk{
 			OsType:       compute.OperatingSystemTypes(vmssSpec.OSDisk.OSType),
@@ -237,16 +236,16 @@ func (s *Service) generateStorageProfile(ctx context.Context, vmssSpec Spec, sku
 		},
 	}
 
-	// enable ephemeral OS
-	if vmssSpec.OSDisk.DiffDiskSettings != nil {
-		if !sku.HasCapability(resourceskus.EphemeralOSDisk) {
-			return nil, fmt.Errorf("vm size %s does not support ephemeral os. select a different vm size or disable ephemeral os", vmssSpec.Sku)
-		}
+	// // enable ephemeral OS
+	// if vmssSpec.OSDisk.DiffDiskSettings != nil {
+	// 	if !sku.HasCapability(resourceskus.EphemeralOSDisk) {
+	// 		return nil, fmt.Errorf("vm size %s does not support ephemeral os. select a different vm size or disable ephemeral os", vmssSpec.Sku)
+	// 	}
 
-		// storageProfile.OsDisk.DiffDiskSettings = &compute.DiffDiskSettings{
-		// 	Option: compute.DiffDiskOptions(vmssSpec.OSDisk.DiffDiskSettings.Option),
-		// }
-	}
+	// 	// storageProfile.OsDisk.DiffDiskSettings = &compute.DiffDiskSettings{
+	// 	// 	Option: compute.DiffDiskOptions(vmssSpec.OSDisk.DiffDiskSettings.Option),
+	// 	// }
+	// }
 
 	dataDisks := []compute.VirtualMachineScaleSetDataDisk{}
 	for _, disk := range vmssSpec.DataDisks {

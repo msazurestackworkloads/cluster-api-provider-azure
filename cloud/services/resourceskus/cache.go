@@ -75,7 +75,6 @@ func (c *Cache) refresh(ctx context.Context, location string) error {
 	}
 
 	c.data = data
-
 	return nil
 }
 

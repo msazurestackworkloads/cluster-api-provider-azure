@@ -118,6 +118,10 @@ SKIP_CREATE_MGMT_CLUSTER ?= false
 # Build time versioning details.
 LDFLAGS := $(shell hack/version.sh)
 
+# Allow overriding the feature gates
+EXP_MACHINE_POOL ?= true
+FEATURE_GATES_JSON_PATCH := [{"op": "add", "path": "/spec/template/spec/containers/1/args/-", "value": "--feature-gates=MachinePool=$(EXP_MACHINE_POOL)"}]
+
 CLUSTER_TEMPLATE ?= cluster-template.yaml
 MANAGED_CLUSTER_TEMPLATE ?= cluster-template-aks.yaml
 
@@ -389,6 +393,12 @@ create-management-cluster: $(KUSTOMIZE) $(ENVSUBST)
 	# Deploy CAPZ
 	kind load docker-image $(CONTROLLER_IMG)-$(ARCH):$(TAG) --name=capz
 	$(KUSTOMIZE) build config | $(ENVSUBST) | kubectl apply -f -
+
+	# Patch controllers with feature gates flag
+	kubectl patch deployment capi-controller-manager -n capi-system --type=json -p='$(FEATURE_GATES_JSON_PATCH)'
+	kubectl patch deployment capi-kubeadm-bootstrap-controller-manager -n capi-kubeadm-bootstrap-system --type=json -p='$(FEATURE_GATES_JSON_PATCH)'
+	kubectl patch deployment capz-controller-manager -n capz-system --type=json -p='$(FEATURE_GATES_JSON_PATCH)'
+	kubectl patch deployment capi-controller-manager -n capi-webhook-system --type=json -p='$(FEATURE_GATES_JSON_PATCH)'
 
 	# Wait for CAPI deployments
 	kubectl wait --for=condition=Available --timeout=5m -n capi-system deployment -l cluster.x-k8s.io/provider=cluster-api
