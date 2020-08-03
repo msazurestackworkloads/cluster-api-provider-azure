@@ -2,7 +2,6 @@ apiVersion: cluster.x-k8s.io/v1alpha3
 kind: Cluster
 metadata:
   name: ${CLUSTER_NAME}
-  namespace: default
 spec:
   clusterNetwork:
     pods:
@@ -21,32 +20,24 @@ apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
 kind: AzureCluster
 metadata:
   name: ${CLUSTER_NAME}
-  namespace: default
 spec:
   location: ${AZURE_LOCATION}
   networkSpec:
     vnet:
-      name: ${AZURE_VNET_NAME}
-  resourceGroup: ${AZURE_RESOURCE_GROUP}
+      name: ${AZURE_VNET_NAME:=${CLUSTER_NAME}-vnet}
+  resourceGroup: ${AZURE_RESOURCE_GROUP:=${CLUSTER_NAME}}
   subscriptionID: ${AZURE_SUBSCRIPTION_ID}
 ---
 apiVersion: controlplane.cluster.x-k8s.io/v1alpha3
 kind: KubeadmControlPlane
 metadata:
   name: ${CLUSTER_NAME}-control-plane
-  namespace: default
 spec:
   infrastructureTemplate:
     apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
     kind: AzureMachineTemplate
     name: ${CLUSTER_NAME}-control-plane
   kubeadmConfigSpec:
-    preKubeadmCommands: 
-      - "hi loading pre script"
-      - sudo bash /etc/kubernetes/prekubeadmcommands.sh
-    postKubeadmCommands: 
-      - "hi loading post script"
-      - sudo bash /etc/kubernetes/postkubeadmcommands.sh
     clusterConfiguration:
       apiServer:
         extraArgs:
@@ -75,20 +66,44 @@ spec:
           readOnly: true
         - hostPath: /etc/kubernetes/prekubeadmcommands.sh
           mountPath: /etc/kubernetes/prekubeadmcommands.sh
-          name: cloud-config-stack
+          name: prekubeadmcommands
           readOnly: true
+        - hostPath: /etc/kubernetes/postkubeadmcommands.sh
+          mountPath: /etc/kubernetes/postkubeadmcommands.sh
+          name: postkubeadmcommands
+          readOnly: true
+      etcd:
+        local:
+          dataDir: /var/lib/etcddisk/etcd
+    diskSetup:
+      filesystems:
+      - device: /dev/disk/azure/scsi1/lun0
+        extraOpts:
+        - -E
+        - lazy_itable_init=1,lazy_journal_init=1
+        filesystem: ext4
+        label: etcd_disk
+      - device: ephemeral0.1
+        filesystem: ext4
+        label: ephemeral0
+        replaceFS: ntfs
+      partitions:
+      - device: /dev/disk/azure/scsi1/lun0
+        layout: true
+        overwrite: false
+        tableType: gpt
     files:
     - content: |
-          sudo cp /var/lib/waagent/Certificates.pem /usr/local/share/ca-certificates/azsCertificate.crt
-          sudo update-ca-certificates
-          sudo echo 'Environment=AZURE_ENVIRONMENT_FILEPATH=/etc/kubernetes/azurestackcloud.json' \ >> /usr/lib/systemd/system/kubelet.service.d/10-kubeadm.conf
-          sudo systemctl daemon-reload
-          sudo systemctl restart kubelet
+        sudo cp /var/lib/waagent/Certificates.pem /usr/local/share/ca-certificates/azsCertificate.crt
+        sudo update-ca-certificates
+        sudo echo 'Environment=AZURE_ENVIRONMENT_FILEPATH=/etc/kubernetes/azurestackcloud.json' \ >> /usr/lib/systemd/system/kubelet.service.d/10-kubeadm.conf
+        sudo systemctl daemon-reload
+        sudo systemctl restart kubelet
       owner: root:root
       path: /etc/kubernetes/prekubeadmcommands.sh
       permissions: "0644"
     - content: |
-          "sudo sed -i 's/imagePullPolicy: IfNotPresent/imagePullPolicy: IfNotPresent\\n    env:\\n    - name: AZURE_ENVIRONMENT_FILEPATH\\n      value: \\/etc\\/kubernetes\\/azurestackcloud.json/g' /etc/kubernetes/manifests/kube-controller-manager.yaml"
+        sudo sed -i 's/imagePullPolicy: IfNotPresent/imagePullPolicy: IfNotPresent\\n    env:\\n    - name: AZURE_ENVIRONMENT_FILEPATH\\n      value: \\/etc\\/kubernetes\\/azurestackcloud.json/g' /etc/kubernetes/manifests/kube-controller-manager.yaml
       owner: root:root
       path: /etc/kubernetes/postkubeadmcommands.sh
       permissions: "0644"
@@ -108,10 +123,10 @@ spec:
           "subnetName": "${CLUSTER_NAME}-node-subnet",
           "routeTableName": "${CLUSTER_NAME}-node-routetable",
           "userAssignedID": "${CLUSTER_NAME}",
-          "loadBalancerSku": "Basic",
+          "loadBalancerSku": "basic",
           "maximumLoadBalancerRuleCount": 250,
           "useManagedIdentityExtension": false,
-          "useInstanceMetadata": false, 
+          "useInstanceMetadata": false,
           "excludeMasterFromStandardLB": false
         }
       owner: root:root
@@ -156,6 +171,17 @@ spec:
           cloud-config: /etc/kubernetes/azure.json
           cloud-provider: azure
         name: '{{ ds.meta_data["local_hostname"] }}'
+    postKubeadmCommands:
+    - echo 'hi loading post script'
+    - sudo bash /etc/kubernetes/postkubeadmcommands.sh
+    - echo 'hi finished loading post script'
+    preKubeadmCommands:
+    - echo 'hi loading pre script'
+    - sudo bash /etc/kubernetes/prekubeadmcommands.sh
+    - echo 'hi finished loading pre script'
+    mounts:
+    - - LABEL=etcd_disk
+      - /var/lib/etcddisk
     useExperimentalRetryJoin: true
   replicas: ${CONTROL_PLANE_MACHINE_COUNT}
   version: ${KUBERNETES_VERSION}
@@ -164,16 +190,19 @@ apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
 kind: AzureMachineTemplate
 metadata:
   name: ${CLUSTER_NAME}-control-plane
-  namespace: default
 spec:
   template:
     spec:
-      image: 
-        marketplace: 
-          publisher: AzureStack
+      image:
+        marketplace:
           offer: Test
-          sku: capz-test
+          publisher: AzureStack
+          sku: capz-test-1804
           version: latest
+      dataDisks:
+      - diskSizeGB: 256
+        lun: 0
+        nameSuffix: etcddisk
       location: ${AZURE_LOCATION}
       osDisk:
         diskSizeGB: 128
@@ -183,136 +212,132 @@ spec:
       sshPublicKey: ${AZURE_SSH_PUBLIC_KEY}
       vmSize: ${AZURE_CONTROL_PLANE_MACHINE_TYPE}
 ---
-apiVersion: cluster.x-k8s.io/v1alpha3
-kind: MachineDeployment
+apiVersion: exp.cluster.x-k8s.io/v1alpha3
+kind: MachinePool
 metadata:
-  name: ${CLUSTER_NAME}-md-0
-  namespace: default
+  name: ${CLUSTER_NAME}-mp-0
 spec:
   clusterName: ${CLUSTER_NAME}
   replicas: ${WORKER_MACHINE_COUNT}
-  selector:
-    matchLabels: null
   template:
     spec:
       bootstrap:
         configRef:
           apiVersion: bootstrap.cluster.x-k8s.io/v1alpha3
-          kind: KubeadmConfigTemplate
-          name: ${CLUSTER_NAME}-md-0
+          kind: KubeadmConfig
+          name: ${CLUSTER_NAME}-mp-0
       clusterName: ${CLUSTER_NAME}
       infrastructureRef:
-        apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
-        kind: AzureMachineTemplate
-        name: ${CLUSTER_NAME}-md-0
+        apiVersion: exp.infrastructure.cluster.x-k8s.io/v1alpha3
+        kind: AzureMachinePool
+        name: ${CLUSTER_NAME}-mp-0
       version: ${KUBERNETES_VERSION}
 ---
-apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
-kind: AzureMachineTemplate
+apiVersion: exp.infrastructure.cluster.x-k8s.io/v1alpha3
+kind: AzureMachinePool
 metadata:
-  name: ${CLUSTER_NAME}-md-0
-  namespace: default
+  name: ${CLUSTER_NAME}-mp-0
 spec:
+  location: ${AZURE_LOCATION}
   template:
-    spec:
-      image: 
-        marketplace: 
-          publisher: AzureStack
-          offer: Test
-          sku: capz-test
-          version: latest
-      location: ${AZURE_LOCATION}
-      osDisk:
-        diskSizeGB: 30
-        managedDisk:
-          storageAccountType: Premium_LRS
-        osType: Linux
-      sshPublicKey: ${AZURE_SSH_PUBLIC_KEY}
-      vmSize: ${AZURE_NODE_MACHINE_TYPE}
+    image:
+      marketplace:
+        offer: Test
+        publisher: AzureStack
+        sku: capz-test-1804
+        version: latest
+    osDisk:
+      diskSizeGB: 30
+      managedDisk:
+        storageAccountType: Premium_LRS
+      osType: Linux
+    sshPublicKey: ${AZURE_SSH_PUBLIC_KEY}
+    vmSize: ${AZURE_NODE_MACHINE_TYPE}
 ---
 apiVersion: bootstrap.cluster.x-k8s.io/v1alpha3
-kind: KubeadmConfigTemplate
+kind: KubeadmConfig
 metadata:
-  name: ${CLUSTER_NAME}-md-0
-  namespace: default
+  name: ${CLUSTER_NAME}-mp-0
 spec:
-  template:
-    spec:
-      preKubeadmCommands: 
-        - "hi loading pre script"
-        - sudo bash /etc/kubernetes/prekubeadmcommands.sh
-      postKubeadmCommands: 
-        - "hi loading post script"
-        - sudo bash /etc/kubernetes/postkubeadmcommands.sh
-      files:
-      - content: |
-            sudo cp /var/lib/waagent/Certificates.pem /usr/local/share/ca-certificates/azsCertificate.crt
-            sudo update-ca-certificates
-            sudo echo 'Environment=AZURE_ENVIRONMENT_FILEPATH=/etc/kubernetes/azurestackcloud.json' \ >> /usr/lib/systemd/system/kubelet.service.d/10-kubeadm.conf
-            sudo systemctl daemon-reload
-            sudo systemctl restart kubelet
-        owner: root:root
-        path: /etc/kubernetes/prekubeadmcommands.sh
-        permissions: "0644"
-      - content: |
-            "sudo sed -i 's/imagePullPolicy: IfNotPresent/imagePullPolicy: IfNotPresent\\n    env:\\n    - name: AZURE_ENVIRONMENT_FILEPATH\\n      value: \\/etc\\/kubernetes\\/azurestackcloud.json/g' /etc/kubernetes/manifests/kube-controller-manager.yaml"
-        owner: root:root
-        path: /etc/kubernetes/postkubeadmcommands.sh
-        permissions: "0644"
-      - content: |
-          {
-            "cloud": "${AZURE_ENVIRONMENT}",
-            "tenantId": "${AZURE_TENANT_ID}",
-            "subscriptionId": "${AZURE_SUBSCRIPTION_ID}",
-            "aadClientId": "${AZURE_CLIENT_ID}",
-            "aadClientSecret": "${AZURE_CLIENT_SECRET}",
-            "resourceGroup": "${AZURE_RESOURCE_GROUP}",
-            "securityGroupName": "${CLUSTER_NAME}-node-nsg",
-            "location": "${AZURE_LOCATION}",
-            "vmType": "vmss",
-            "vnetName": "${CLUSTER_NAME}-vnet",
-            "vnetResourceGroup": "${AZURE_RESOURCE_GROUP}",
-            "subnetName": "${CLUSTER_NAME}-node-subnet",
-            "routeTableName": "${CLUSTER_NAME}-node-routetable",
-            "loadBalancerSku": "Basic",
-            "maximumLoadBalancerRuleCount": 250,
-            "useManagedIdentityExtension": false,
-            "useInstanceMetadata": false,
-            "excludeMasterFromStandardLB": false
-          }
-        owner: root:root
-        path: /etc/kubernetes/azure.json
-        permissions: "0644"
-      - content: |
-          {
-            "name":"${AZURE_ENVIRONMENT}",
-            "managementPortalURL":"https://portal.redmond.ext-n25r1306.masd.stbtest.microsoft.com/",
-            "publishSettingsURL":"",
-            "serviceManagementEndpoint":"https://management.azurestackci02.onmicrosoft.com/6bbece7e-df47-402c-bf11-101f74fdf525",
-            "resourceManagerEndpoint":"https://management.redmond.ext-n25r1306.masd.stbtest.microsoft.com/",
-            "activeDirectoryEndpoint":"https://login.microsoftonline.com/",
-            "galleryEndpoint":"https://providers.n25r1306.masd.stbtest.microsoft.com:30016/",
-            "keyVaultEndpoint":"","graphEndpoint":"https://graph.windows.net/",
-            "serviceBusEndpoint":"",
-            "batchManagementEndpoint":"",
-            "storageEndpointSuffix":"redmond.ext-n25r1306.masd.stbtest.microsoft.com",
-            "sqlDatabaseDNSSuffix":"",
-            "trafficManagerDNSSuffix":"",
-            "keyVaultDNSSuffix":"vault.redmond.ext-n25r1306.masd.stbtest.microsoft.com",
-            "serviceBusEndpointSuffix":"",
-            "serviceManagementVMDNSSuffix":"",
-            "resourceManagerVMDNSSuffix":"cloudapp.ext-n25r1306.masd.stbtest.microsoft.com",
-            "containerRegistryDNSSuffix":"",
-            "cosmosDBDNSSuffix":"",
-            "tokenAudience":"",
-            "resourceIdentifiers":{"graph":"","keyVault":"","datalake":"","batch":"","operationalInsights":"","storage":""}
-          }
-        owner: root:root
-        path: /etc/kubernetes/azurestackcloud.json
-        permissions: "0644"
-      joinConfiguration:
-        nodeRegistration:
-          kubeletExtraArgs:
-            cloud-config: /etc/kubernetes/azure.json
-            cloud-provider: azure
-          name: '{{ ds.meta_data["local_hostname"] }}'
+  files:
+  - content: |
+      sudo cp /var/lib/waagent/Certificates.pem /usr/local/share/ca-certificates/azsCertificate.crt
+      sudo update-ca-certificates
+      sudo echo 'Environment=AZURE_ENVIRONMENT_FILEPATH=/etc/kubernetes/azurestackcloud.json' \ >> /usr/lib/systemd/system/kubelet.service.d/10-kubeadm.conf
+      sudo systemctl daemon-reload
+      sudo systemctl restart kubelet
+    owner: root:root
+    path: /etc/kubernetes/prekubeadmcommands.sh
+    permissions: "0644"
+  - content: |
+      sudo sed -i 's/imagePullPolicy: IfNotPresent/imagePullPolicy: IfNotPresent\\n    env:\\n    - name: AZURE_ENVIRONMENT_FILEPATH\\n      value: \\/etc\\/kubernetes\\/azurestackcloud.json/g' /etc/kubernetes/manifests/kube-controller-manager.yaml
+    owner: root:root
+    path: /etc/kubernetes/postkubeadmcommands.sh
+    permissions: "0644"
+  - content: |
+      {
+        "cloud": "${AZURE_ENVIRONMENT}",
+        "tenantId": "${AZURE_TENANT_ID}",
+        "subscriptionId": "${AZURE_SUBSCRIPTION_ID}",
+        "aadClientId": "${AZURE_CLIENT_ID}",
+        "aadClientSecret": "${AZURE_CLIENT_SECRET}",
+        "resourceGroup": "${AZURE_RESOURCE_GROUP}",
+        "securityGroupName": "${CLUSTER_NAME}-node-nsg",
+        "location": "${AZURE_LOCATION}",
+        "vmType": "vmss",
+        "vnetName": "${CLUSTER_NAME}-vnet",
+        "vnetResourceGroup": "${AZURE_RESOURCE_GROUP}",
+        "subnetName": "${CLUSTER_NAME}-node-subnet",
+        "routeTableName": "${CLUSTER_NAME}-node-routetable",
+        "userAssignedID": "${CLUSTER_NAME}",
+        "loadBalancerSku": "basic",
+        "maximumLoadBalancerRuleCount": 250,
+        "useManagedIdentityExtension": false,
+        "useInstanceMetadata": false,
+        "excludeMasterFromStandardLB": false
+      }
+    owner: root:root
+    path: /etc/kubernetes/azure.json
+    permissions: "0644"
+  - content: |
+      {
+        "name":"${AZURE_ENVIRONMENT}",
+        "managementPortalURL":"https://portal.redmond.ext-n25r1306.masd.stbtest.microsoft.com/",
+        "publishSettingsURL":"",
+        "serviceManagementEndpoint":"https://management.azurestackci02.onmicrosoft.com/6bbece7e-df47-402c-bf11-101f74fdf525",
+        "resourceManagerEndpoint":"https://management.redmond.ext-n25r1306.masd.stbtest.microsoft.com/",
+        "activeDirectoryEndpoint":"https://login.microsoftonline.com/",
+        "galleryEndpoint":"https://providers.n25r1306.masd.stbtest.microsoft.com:30016/",
+        "keyVaultEndpoint":"","graphEndpoint":"https://graph.windows.net/",
+        "serviceBusEndpoint":"",
+        "batchManagementEndpoint":"",
+        "storageEndpointSuffix":"redmond.ext-n25r1306.masd.stbtest.microsoft.com",
+        "sqlDatabaseDNSSuffix":"",
+        "trafficManagerDNSSuffix":"",
+        "keyVaultDNSSuffix":"vault.redmond.ext-n25r1306.masd.stbtest.microsoft.com",
+        "serviceBusEndpointSuffix":"",
+        "serviceManagementVMDNSSuffix":"",
+        "resourceManagerVMDNSSuffix":"cloudapp.ext-n25r1306.masd.stbtest.microsoft.com",
+        "containerRegistryDNSSuffix":"",
+        "cosmosDBDNSSuffix":"",
+        "tokenAudience":"",
+        "resourceIdentifiers":{"graph":"","keyVault":"","datalake":"","batch":"","operationalInsights":"","storage":""}
+      }
+    owner: root:root
+    path: /etc/kubernetes/azurestackcloud.json
+    permissions: "0644"
+  joinConfiguration:
+    nodeRegistration:
+      kubeletExtraArgs:
+        cloud-config: /etc/kubernetes/azure.json
+        cloud-provider: azure
+      name: '{{ ds.meta_data["local_hostname"] }}'
+  useExperimentalRetryJoin: true
+  postKubeadmCommands:
+  - echo 'hi loading post script'
+  - sudo bash /etc/kubernetes/postkubeadmcommands.sh
+  - echo 'hi finished loading post script'
+  preKubeadmCommands:
+  - echo 'hi loading pre script'
+  - sudo bash /etc/kubernetes/prekubeadmcommands.sh
+  - echo 'hi finished loading pre script'
