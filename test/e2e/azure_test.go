@@ -100,7 +100,7 @@ var _ = Describe("Workload cluster creation", func() {
 	})
 
 	Context("Creating highly available control-plane cluster", func() {
-		It("With 3 control-plane nodes and 2 worker nodes", func() {
+		It("With 1 control-plane node and 2 worker nodes", func() {
 			cluster, _, _ = clusterctl.ApplyClusterTemplateAndWait(ctx, clusterctl.ApplyClusterTemplateAndWaitInput{
 				ClusterProxy: bootstrapClusterProxy,
 				ConfigCluster: clusterctl.ConfigClusterInput{
@@ -112,7 +112,7 @@ var _ = Describe("Workload cluster creation", func() {
 					Namespace:                namespace.Name,
 					ClusterName:              clusterName,
 					KubernetesVersion:        e2eConfig.GetVariable(KubernetesVersion),
-					ControlPlaneMachineCount: pointer.Int64Ptr(3),
+					ControlPlaneMachineCount: pointer.Int64Ptr(1),
 					WorkerMachineCount:       pointer.Int64Ptr(2),
 				},
 				CNIManifestPath:              e2eConfig.GetVariable(CNIPath),

@@ -49,7 +49,7 @@ get_random_region() {
 }
 
 export REGISTRY="e2e"
-export AZURE_ENVIRONMENT="AzurePublicCloud"
+export AZURE_ENVIRONMENT="${AZURE_ENVIRONMENT}"
 export GINKGO_NODES=3
 export AZURE_SUBSCRIPTION_ID_B64="$(echo -n "$AZURE_SUBSCRIPTION_ID" | base64 | tr -d '\n')"
 export AZURE_TENANT_ID_B64="$(echo -n "$AZURE_TENANT_ID" | base64 | tr -d '\n')"
