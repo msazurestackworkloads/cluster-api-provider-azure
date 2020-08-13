@@ -206,7 +206,7 @@ spec:
         marketplace:
           offer: Test
           publisher: AzureStack
-          sku: capz-test-1804-3
+          sku: capz-test-1804
           version: latest
       location: ${AZURE_LOCATION}
       osDisk:
@@ -251,7 +251,7 @@ spec:
       marketplace:
         offer: Test
         publisher: AzureStack
-        sku: capz-test-1804-3
+        sku: capz-test-1804
         version: latest
     osDisk:
       diskSizeGB: 30

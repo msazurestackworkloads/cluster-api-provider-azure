@@ -26,8 +26,8 @@ spec:
   location: ${AZURE_LOCATION}
   networkSpec:
     vnet:
-      name: ${AZURE_VNET_NAME:=${CLUSTER_NAME}-vnet}
-  resourceGroup: ${AZURE_RESOURCE_GROUP:=${CLUSTER_NAME}}
+      name: ${CLUSTER_NAME}-vnet
+  resourceGroup: ${CLUSTER_NAME}
   subscriptionID: ${AZURE_SUBSCRIPTION_ID}
 ---
 apiVersion: controlplane.cluster.x-k8s.io/v1alpha3
@@ -106,7 +106,7 @@ spec:
       path: /etc/kubernetes/prekubeadmcommands.sh
       permissions: "0644"
     - content: |
-        sudo sed -i 's/imagePullPolicy: IfNotPresent/imagePullPolicy: IfNotPresent\\n    env:\\n    - name: AZURE_ENVIRONMENT_FILEPATH\\n      value: \\/etc\\/kubernetes\\/azurestackcloud.json/g' /etc/kubernetes/manifests/kube-controller-manager.yaml
+        sudo sed -i 's@imagePullPolicy: IfNotPresent@imagePullPolicy: IfNotPresent\n    env:\n    - name: AZURE_ENVIRONMENT_FILEPATH\n      value: \/etc\/kubernetes\/azurestackcloud.json@g' /etc/kubernetes/manifests/kube-controller-manager.yaml
       owner: root:root
       path: /etc/kubernetes/postkubeadmcommands.sh
       permissions: "0644"
@@ -130,7 +130,8 @@ spec:
           "maximumLoadBalancerRuleCount": 250,
           "useManagedIdentityExtension": false,
           "useInstanceMetadata": false,
-          "excludeMasterFromStandardLB": false
+          "excludeMasterFromStandardLB": false,
+          "primaryScaleSetName": "${CLUSTER_NAME}-mp-0"
         }
       owner: root:root
       path: /etc/kubernetes/azure.json
@@ -140,7 +141,7 @@ spec:
           "name":"${AZURE_ENVIRONMENT}",
           "managementPortalURL":"https://portal.redmond.ext-n31r1203.masd.stbtest.microsoft.com/",
           "publishSettingsURL":"",
-          "serviceManagementEndpoint":"https://management.adfs.n31r1203.masd.stbtest.microsoft.com/98bbb015-dcf2-467c-a1cb-951df61a0948",
+          "serviceManagementEndpoint":"https://management.adfs.n31r1203.masd.stbtest.microsoft.com/f4a7aab6-6167-41a9-abc0-1c925284411d",
           "resourceManagerEndpoint":"https://management.redmond.ext-n31r1203.masd.stbtest.microsoft.com/",
           "activeDirectoryEndpoint":"https://adfs.redmond.ext-n31r1203.masd.stbtest.microsoft.com/",
           "galleryEndpoint":"https://providers.n31r1203.masd.stbtest.microsoft.com:30016/",
@@ -278,7 +279,7 @@ spec:
     path: /etc/kubernetes/prekubeadmcommands.sh
     permissions: "0644"
   - content: |
-      sudo sed -i 's/imagePullPolicy: IfNotPresent/imagePullPolicy: IfNotPresent\\n    env:\\n    - name: AZURE_ENVIRONMENT_FILEPATH\\n      value: \\/etc\\/kubernetes\\/azurestackcloud.json/g' /etc/kubernetes/manifests/kube-controller-manager.yaml
+      sudo sed -i 's@imagePullPolicy: IfNotPresent@imagePullPolicy: IfNotPresent\n    env:\n    - name: AZURE_ENVIRONMENT_FILEPATH\n      value: \/etc\/kubernetes\/azurestackcloud.json@g' /etc/kubernetes/manifests/kube-controller-manager.yaml
     owner: root:root
     path: /etc/kubernetes/postkubeadmcommands.sh
     permissions: "0644"
@@ -302,7 +303,8 @@ spec:
         "maximumLoadBalancerRuleCount": 250,
         "useManagedIdentityExtension": false,
         "useInstanceMetadata": false,
-        "excludeMasterFromStandardLB": false
+        "excludeMasterFromStandardLB": false,
+        "primaryScaleSetName": "${CLUSTER_NAME}-mp-0"
       }
     owner: root:root
     path: /etc/kubernetes/azure.json
@@ -312,7 +314,7 @@ spec:
         "name":"${AZURE_ENVIRONMENT}",
         "managementPortalURL":"https://portal.redmond.ext-n31r1203.masd.stbtest.microsoft.com/",
         "publishSettingsURL":"",
-        "serviceManagementEndpoint":"https://management.adfs.n31r1203.masd.stbtest.microsoft.com/98bbb015-dcf2-467c-a1cb-951df61a0948",
+        "serviceManagementEndpoint":"https://management.adfs.n31r1203.masd.stbtest.microsoft.com/f4a7aab6-6167-41a9-abc0-1c925284411d",
         "resourceManagerEndpoint":"https://management.redmond.ext-n31r1203.masd.stbtest.microsoft.com/",
         "activeDirectoryEndpoint":"https://adfs.redmond.ext-n31r1203.masd.stbtest.microsoft.com/",
         "galleryEndpoint":"https://providers.n31r1203.masd.stbtest.microsoft.com:30016/",
