@@ -19,7 +19,6 @@ package scalesets
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/compute/mgmt/compute"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -70,7 +69,6 @@ func (s *Service) Get(ctx context.Context, vmssSpec *Spec) (*infrav1exp.VMSS, er
 }
 
 func (s *Service) Reconcile(ctx context.Context, spec interface{}) error {
-	log.Println("HERE reconcile vmss")
 	vmssSpec, ok := spec.(*Spec)
 	if !ok {
 		return errors.New("invalid VMSS specification")

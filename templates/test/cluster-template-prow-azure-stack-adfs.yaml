@@ -183,13 +183,13 @@ spec:
     - - LABEL=etcd_disk
       - /var/lib/etcddisk
     postKubeadmCommands:
-    - echo 'hi loading post script'
+    - echo 'loading post script'
     - sudo bash /etc/kubernetes/postkubeadmcommands.sh
-    - echo 'hi finished loading post script'
+    - echo 'finished loading post script'
     preKubeadmCommands:
-    - echo 'hi loading pre script'
+    - echo 'loading pre script'
     - sudo bash /etc/kubernetes/prekubeadmcommands.sh
-    - echo 'hi finished loading pre script'
+    - echo 'finished loading pre script'
     useExperimentalRetryJoin: true
   replicas: ${CONTROL_PLANE_MACHINE_COUNT}
   version: ${KUBERNETES_VERSION}
@@ -347,11 +347,11 @@ spec:
         cloud-provider: azure
       name: '{{ ds.meta_data["local_hostname"] }}'
   postKubeadmCommands:
-  - echo 'hi loading post script'
+  - echo 'loading post script'
   - sudo bash /etc/kubernetes/postkubeadmcommands.sh
-  - echo 'hi finished loading post script'
+  - echo 'finished loading post script'
   preKubeadmCommands:
-  - echo 'hi loading pre script'
+  - echo 'loading pre script'
   - sudo bash /etc/kubernetes/prekubeadmcommands.sh
-  - echo 'hi finished loading pre script'
+  - echo 'finished loading pre script'
   useExperimentalRetryJoin: true
