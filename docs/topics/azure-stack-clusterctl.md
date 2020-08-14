@@ -9,6 +9,16 @@ To deploy a cluster to Azure Stack Hub using [clusterctl](https://cluster-api.si
 cp repo/cluster-api-provider-azure/templates/cluster-template-azure-stack.yaml ~/.cluster-api/overrides/infrastructure-azure/v0.4.0/
 ```
 
+### Temporary known bug fix for Setup
+
+In the `~/.cluster-api/overrides` directory, run the following commands: 
+
+```bash
+find . -type f -exec sed -i "s/\${EXP_MACHINE_POOL:=false}/true/g" {} \;
+find . -type f -exec sed -i "s/\${EXP_AKS:=false}/false/g" {} \;
+find . -type f -exec sed -i "s/\${EXP_CLUSTER_RESOURCE_SET:=false}/false/g" {} \;
+```
+
 ### Create kind cluster
 
 Cluster API requires an existing Kubernetes cluster accessible via kubectl; during the installation process the Kubernetes cluster will be transformed into a management cluster by installing the Cluster API provider components. 
@@ -26,19 +36,21 @@ clusterctl init --core cluster-api:v0.3.0 --bootstrap kubeadm:v0.3.0 --control-p
 ### Create workload cluster
 Once the management cluster is ready, you can create your workload cluster. The `clusterctl config cluster` command returns a YAML template for creating a workload cluster. 
 
-Set the required [Azure Stack environment variables](./azure-stack.md). 
+Set the required [Azure Stack environment variables](./azure-stack.md#set-environment-variables). 
 
 Generate the cluster configuration, either by flavor or directly from file.
 
 To generate by flavor: 
 ```bash
-clusterctl config cluster capz-cluster2 --kubernetes-version v1.17.8 --control-plane-machine-count 1 --worker-machine-count 1 --flavor azure-stack > my-cluster.yaml
+clusterctl config cluster capz-cluster --kubernetes-version v1.17.8 --control-plane-machine-count 1 --worker-machine-count 1 --flavor azure-stack > my-cluster.yaml
 ```
 To generate directly from file: 
 ```bash
-clusterctl config cluster capz-cluster2 --kubernetes-version v1.17.8 --control-plane-machine-count 1 --worker-machine-count 1 --from repo/cluster-api-provider-azure/templates/cluster-template-azure-stack.yaml > my-cluster.yaml
+clusterctl config cluster capz-cluster --kubernetes-version v1.17.8 --control-plane-machine-count 1 --worker-machine-count 1 --from repo/cluster-api-provider-azure/templates/cluster-template-azure-stack.yaml > my-cluster.yaml
 ```
 This creates a YAML file named `my-cluster.yaml` with a predefined list of Cluster API objects; Cluster, Machines, Machine Deployments, etc. 
+
+Important: Fill in placeholder azurestackcloud json as described [here](./azure-stack.md#set-workload-cluster-template-manifest). 
 
 When ready, run the following command to apply the cluster manifest, creating a workload cluster on Azure Stack Hub:
 ```bash
@@ -52,7 +64,7 @@ kubectl get cluster --all-namespaces
 ```
 After the first control plane node is up and running, we can retrieve the workload cluster Kubeconfig: 
 ```bash
-kubectl get secrets capz-cluster2-kubeconfig -o json | jq -r .data.value | base64 --decode > ./kubeconfig
+kubectl get secrets capz-cluster-kubeconfig -o json | jq -r .data.value | base64 --decode > ./kubeconfig
 ```
 
 ### Deploy a CNI solution

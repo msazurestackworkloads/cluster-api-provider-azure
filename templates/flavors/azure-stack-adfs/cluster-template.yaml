@@ -110,7 +110,7 @@ spec:
     - content: |
         {
           "cloud": "${AZURE_ENVIRONMENT}",
-          "tenantId": "adfs",
+          "tenantId": "${IDENTITY_TENANT_ID}",
           "subscriptionId": "${AZURE_SUBSCRIPTION_ID}",
           "aadClientId": "${AZURE_CLIENT_ID}",
           "aadClientSecret": "${AZURE_CLIENT_SECRET}",
@@ -279,7 +279,7 @@ spec:
   - content: |
       {
         "cloud": "${AZURE_ENVIRONMENT}",
-        "tenantId": "adfs",
+        "tenantId": "${IDENTITY_TENANT_ID}",
         "subscriptionId": "${AZURE_SUBSCRIPTION_ID}",
         "aadClientId": "${AZURE_CLIENT_ID}",
         "aadClientSecret": "${AZURE_CLIENT_SECRET}",
