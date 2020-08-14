@@ -44,7 +44,7 @@ providers:
       - name: v0.4.0
         value: "${PWD}/config"
     files:
-      - sourcePath: "${PWD}/templates/test/cluster-template-prow-azure-stack-aad.yaml"
+      - sourcePath: "${PWD}/templates/test/cluster-template-prow-azure-stack.yaml"
         targetName: "cluster-template.yaml"
 
 variables:
