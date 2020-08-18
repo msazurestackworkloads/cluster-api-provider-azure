@@ -23,7 +23,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-06-01/compute"
 	"github.com/Azure/go-autorest/autorest/to"
 
 	. "github.com/onsi/gomega"
@@ -91,7 +90,7 @@ func TestAzureMachine_ValidateOSDisk(t *testing.T) {
 				DiskSizeGB: 30,
 				OSType:     "blah",
 				DiffDiskSettings: &DiffDiskSettings{
-					Option: string(compute.Local),
+					Option: "Local",
 				},
 				ManagedDisk: ManagedDisk{
 					StorageAccountType: "Standard_LRS",
@@ -161,7 +160,7 @@ func generateNegativeTestCases() []osDiskTestInput {
 				StorageAccountType: "Premium_LRS",
 			},
 			DiffDiskSettings: &DiffDiskSettings{
-				Option: string(compute.Local),
+				Option: "Local",
 			},
 		},
 	}

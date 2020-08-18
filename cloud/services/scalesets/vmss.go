@@ -20,14 +20,11 @@ import (
 	"context"
 	"fmt"
 
-	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/resourceskus"
-
-	infrav1exp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
-
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-06-01/compute"
+	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/compute/mgmt/compute"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/pkg/errors"
 	"k8s.io/klog"
+	infrav1exp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 
 	infrav1 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	azure "sigs.k8s.io/cluster-api-provider-azure/cloud"
@@ -84,18 +81,18 @@ func (s *Service) Reconcile(ctx context.Context, spec interface{}) error {
 	}
 	vmssSpec.AdditionalTags[infrav1.ClusterAzureCloudProviderTagKey(vmssSpec.MachinePoolName)] = string(infrav1.ResourceLifecycleOwned)
 
-	sku, err := s.ResourceSKUCache.Get(ctx, vmssSpec.Sku, resourceskus.VirtualMachines)
-	if err != nil {
-		return errors.Wrapf(err, "failed to get find vm sku %s in compute api", vmssSpec.Sku)
-	}
+	// sku, err := s.ResourceSKUCache.Get(ctx, vmssSpec.Sku, resourceskus.VirtualMachines)
+	// if err != nil {
+	// 	return errors.Wrapf(err, "failed to get find vm sku %s in compute api", vmssSpec.Sku)
+	// }
 
-	if vmssSpec.AcceleratedNetworking == nil {
-		// set accelerated networking to the capability of the VMSize
-		accelNet := sku.HasCapability(resourceskus.AcceleratedNetworking)
-		vmssSpec.AcceleratedNetworking = &accelNet
-	}
+	// if vmssSpec.AcceleratedNetworking == nil {
+	// 	// set accelerated networking to the capability of the VMSize
+	// 	accelNet := sku.HasCapability(resourceskus.AcceleratedNetworking)
+	// 	vmssSpec.AcceleratedNetworking = &accelNet
+	// }
 
-	storageProfile, err := s.generateStorageProfile(ctx, *vmssSpec, sku)
+	storageProfile, err := s.generateStorageProfile(ctx, *vmssSpec)
 	if err != nil {
 		return err
 	}
@@ -128,7 +125,7 @@ func (s *Service) Reconcile(ctx context.Context, spec interface{}) error {
 		},
 		VirtualMachineScaleSetProperties: &compute.VirtualMachineScaleSetProperties{
 			UpgradePolicy: &compute.UpgradePolicy{
-				Mode: compute.UpgradeModeManual,
+				Mode: "Manual",
 			},
 			VirtualMachineProfile: &compute.VirtualMachineScaleSetVMProfile{
 				OsProfile: &compute.VirtualMachineScaleSetOSProfile{
@@ -153,8 +150,8 @@ func (s *Service) Reconcile(ctx context.Context, spec interface{}) error {
 						{
 							Name: to.StringPtr(vmssSpec.Name + "-netconfig"),
 							VirtualMachineScaleSetNetworkConfigurationProperties: &compute.VirtualMachineScaleSetNetworkConfigurationProperties{
-								Primary:            to.BoolPtr(true),
-								EnableIPForwarding: to.BoolPtr(true),
+								Primary: to.BoolPtr(true),
+								// EnableIPForwarding: to.BoolPtr(true),
 								IPConfigurations: &[]compute.VirtualMachineScaleSetIPConfiguration{
 									{
 										Name: to.StringPtr(vmssSpec.Name + "-ipconfig"),
@@ -225,28 +222,28 @@ func (s *Service) Delete(ctx context.Context, spec interface{}) error {
 }
 
 // generateStorageProfile generates a pointer to a compute.VirtualMachineScaleSetStorageProfile which can utilized for VM creation.
-func (s *Service) generateStorageProfile(ctx context.Context, vmssSpec Spec, sku resourceskus.SKU) (*compute.VirtualMachineScaleSetStorageProfile, error) {
+func (s *Service) generateStorageProfile(ctx context.Context, vmssSpec Spec) (*compute.VirtualMachineScaleSetStorageProfile, error) {
 	storageProfile := &compute.VirtualMachineScaleSetStorageProfile{
 		OsDisk: &compute.VirtualMachineScaleSetOSDisk{
 			OsType:       compute.OperatingSystemTypes(vmssSpec.OSDisk.OSType),
 			CreateOption: compute.DiskCreateOptionTypesFromImage,
-			DiskSizeGB:   to.Int32Ptr(vmssSpec.OSDisk.DiskSizeGB),
+			// DiskSizeGB:   to.Int32Ptr(vmssSpec.OSDisk.DiskSizeGB),
 			ManagedDisk: &compute.VirtualMachineScaleSetManagedDiskParameters{
 				StorageAccountType: compute.StorageAccountTypes(vmssSpec.OSDisk.ManagedDisk.StorageAccountType),
 			},
 		},
 	}
 
-	// enable ephemeral OS
-	if vmssSpec.OSDisk.DiffDiskSettings != nil {
-		if !sku.HasCapability(resourceskus.EphemeralOSDisk) {
-			return nil, fmt.Errorf("vm size %s does not support ephemeral os. select a different vm size or disable ephemeral os", vmssSpec.Sku)
-		}
+	// // enable ephemeral OS
+	// if vmssSpec.OSDisk.DiffDiskSettings != nil {
+	// 	if !sku.HasCapability(resourceskus.EphemeralOSDisk) {
+	// 		return nil, fmt.Errorf("vm size %s does not support ephemeral os. select a different vm size or disable ephemeral os", vmssSpec.Sku)
+	// 	}
 
-		storageProfile.OsDisk.DiffDiskSettings = &compute.DiffDiskSettings{
-			Option: compute.DiffDiskOptions(vmssSpec.OSDisk.DiffDiskSettings.Option),
-		}
-	}
+	// 	// storageProfile.OsDisk.DiffDiskSettings = &compute.DiffDiskSettings{
+	// 	// 	Option: compute.DiffDiskOptions(vmssSpec.OSDisk.DiffDiskSettings.Option),
+	// 	// }
+	// }
 
 	dataDisks := []compute.VirtualMachineScaleSetDataDisk{}
 	for _, disk := range vmssSpec.DataDisks {

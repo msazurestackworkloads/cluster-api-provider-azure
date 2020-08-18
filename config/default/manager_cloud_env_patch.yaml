@@ -14,3 +14,13 @@ spec:
               configMapKeyRef:
                 name: manager-bootstrap-cloud-env
                 key: cloud-env
+          - name: AZURE_ARM_ENDPOINT
+            valueFrom:
+              configMapKeyRef:
+                name: manager-bootstrap-cloud-env
+                key: cloud-arm-endpoint
+          - name: IDENTITY_SYSTEM
+            valueFrom:
+              configMapKeyRef:
+                name: manager-bootstrap-cloud-env
+                key: identity-system

@@ -35,7 +35,7 @@ import (
 	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/loadbalancers/mock_loadbalancers"
 	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/publicips/mock_publicips"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-06-01/network"
+	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/network/mgmt/network"
 	infrav1 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 )
 
@@ -157,7 +157,7 @@ func TestReconcileLoadBalancer(t *testing.T) {
 										BackendPort:          to.Int32Ptr(6443),
 										IdleTimeoutInMinutes: to.Int32Ptr(4),
 										EnableFloatingIP:     to.BoolPtr(false),
-										LoadDistribution:     network.LoadDistributionDefault,
+										LoadDistribution:     "Default",
 										FrontendIPConfiguration: &network.SubResource{
 											ID: to.StringPtr("//subscriptions/123/resourceGroups/my-rg/providers/Microsoft.Network/loadBalancers/my-publiclb/frontendIPConfigurations/my-publiclb-frontEnd"),
 										},
@@ -172,9 +172,9 @@ func TestReconcileLoadBalancer(t *testing.T) {
 							},
 							Probes: &[]network.Probe{
 								{
-									Name: to.StringPtr("HTTPSProbe"),
+									Name: to.StringPtr("tcpHTTPSProbe"),
 									ProbePropertiesFormat: &network.ProbePropertiesFormat{
-										Protocol:          network.ProbeProtocolHTTPS,
+										Protocol:          network.ProbeProtocolTCP,
 										Port:              to.Int32Ptr(6443),
 										RequestPath:       to.StringPtr("/healthz"),
 										IntervalInSeconds: to.Int32Ptr(15),
@@ -182,18 +182,16 @@ func TestReconcileLoadBalancer(t *testing.T) {
 									},
 								},
 							},
-							OutboundRules: &[]network.OutboundRule{
+							OutboundNatRules: &[]network.OutboundNatRule{
 								{
 									Name: to.StringPtr("OutboundNATAllProtocols"),
-									OutboundRulePropertiesFormat: &network.OutboundRulePropertiesFormat{
+									OutboundNatRulePropertiesFormat: &network.OutboundNatRulePropertiesFormat{
 										FrontendIPConfigurations: &[]network.SubResource{
 											{ID: to.StringPtr("//subscriptions/123/resourceGroups/my-rg/providers/Microsoft.Network/loadBalancers/my-publiclb/frontendIPConfigurations/my-publiclb-frontEnd")},
 										},
 										BackendAddressPool: &network.SubResource{
 											ID: to.StringPtr("//subscriptions/123/resourceGroups/my-rg/providers/Microsoft.Network/loadBalancers/my-publiclb/backendAddressPools/my-publiclb-backendPool"),
 										},
-										Protocol:             network.LoadBalancerOutboundRuleProtocolAll,
-										IdleTimeoutInMinutes: to.Int32Ptr(4),
 									},
 								},
 							},
@@ -243,18 +241,16 @@ func TestReconcileLoadBalancer(t *testing.T) {
 									Name: to.StringPtr("cluster-name-outboundBackendPool"),
 								},
 							},
-							OutboundRules: &[]network.OutboundRule{
+							OutboundNatRules: &[]network.OutboundNatRule{
 								{
 									Name: to.StringPtr("OutboundNATAllProtocols"),
-									OutboundRulePropertiesFormat: &network.OutboundRulePropertiesFormat{
+									OutboundNatRulePropertiesFormat: &network.OutboundNatRulePropertiesFormat{
 										FrontendIPConfigurations: &[]network.SubResource{
 											{ID: to.StringPtr("//subscriptions/123/resourceGroups/my-rg/providers/Microsoft.Network/loadBalancers/cluster-name/frontendIPConfigurations/cluster-name-frontEnd")},
 										},
 										BackendAddressPool: &network.SubResource{
 											ID: to.StringPtr("//subscriptions/123/resourceGroups/my-rg/providers/Microsoft.Network/loadBalancers/cluster-name/backendAddressPools/cluster-name-outboundBackendPool"),
 										},
-										Protocol:             network.LoadBalancerOutboundRuleProtocolAll,
-										IdleTimeoutInMinutes: to.Int32Ptr(4),
 									},
 								},
 							},
@@ -375,9 +371,9 @@ func TestReconcileLoadBalancer(t *testing.T) {
 						},
 						Probes: &[]network.Probe{
 							{
-								Name: to.StringPtr("HTTPSProbe"),
+								Name: to.StringPtr("tcpHTTPSProbe"),
 								ProbePropertiesFormat: &network.ProbePropertiesFormat{
-									Protocol:          network.ProbeProtocolHTTPS,
+									Protocol:          network.ProbeProtocolTCP,
 									RequestPath:       to.StringPtr("/healthz"),
 									Port:              to.Int32Ptr(100),
 									IntervalInSeconds: to.Int32Ptr(15),
@@ -399,7 +395,7 @@ func TestReconcileLoadBalancer(t *testing.T) {
 									BackendPort:          to.Int32Ptr(100),
 									IdleTimeoutInMinutes: to.Int32Ptr(4),
 									EnableFloatingIP:     to.BoolPtr(false),
-									LoadDistribution:     network.LoadDistributionDefault,
+									LoadDistribution:     "Default",
 									FrontendIPConfiguration: &network.SubResource{
 										ID: to.StringPtr("//subscriptions/123/resourceGroups/my-rg/providers/Microsoft.Network/loadBalancers/my-lb/frontendIPConfigurations/my-lb-frontEnd"),
 									},

@@ -18,6 +18,7 @@ package scope
 
 import (
 	"context"
+
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/go-logr/logr"
 	"github.com/pkg/errors"

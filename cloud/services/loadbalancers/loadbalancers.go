@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-06-01/network"
+	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/network/mgmt/network"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/pkg/errors"
 	"k8s.io/klog"
@@ -53,10 +53,13 @@ func (s *Service) Reconcile(ctx context.Context) error {
 				}
 			} else if azure.ResourceNotFound(err) {
 				s.Scope.V(2).Info("internalLB not found in RG", "internal lb", lbSpec.Name, "resource group", s.Scope.ResourceGroup())
-				privateIP, err = s.getAvailablePrivateIP(ctx, s.Scope.Vnet().ResourceGroup, s.Scope.Vnet().Name, lbSpec.SubnetCidr, lbSpec.PrivateIPAddress)
-				if err != nil {
-					return err
-				}
+				privateIP = "10.0.0.100"
+				/*
+					privateIP, err = s.getAvailablePrivateIP(ctx, s.Scope.Vnet().ResourceGroup, s.Scope.Vnet().Name, lbSpec.SubnetCidr, lbSpec.PrivateIPAddress)
+					if err != nil {
+						return err
+					}
+				*/
 				s.Scope.V(2).Info("setting internal load balancer IP", "private ip", privateIP)
 			} else {
 				return errors.Wrap(err, "failed to look for existing internal LB")
@@ -88,7 +91,7 @@ func (s *Service) Reconcile(ctx context.Context) error {
 		}
 
 		lb := network.LoadBalancer{
-			Sku:      &network.LoadBalancerSku{Name: network.LoadBalancerSkuNameStandard},
+			Sku:      &network.LoadBalancerSku{Name: network.LoadBalancerSkuNameBasic},
 			Location: to.StringPtr(s.Scope.Location()),
 			Tags: converters.TagsToMap(infrav1.Build(infrav1.BuildParams{
 				ClusterName: s.Scope.ClusterName(),
@@ -108,12 +111,10 @@ func (s *Service) Reconcile(ctx context.Context) error {
 						Name: &backEndAddressPoolName,
 					},
 				},
-				OutboundRules: &[]network.OutboundRule{
+				OutboundNatRules: &[]network.OutboundNatRule{
 					{
 						Name: to.StringPtr("OutboundNATAllProtocols"),
-						OutboundRulePropertiesFormat: &network.OutboundRulePropertiesFormat{
-							Protocol:             network.LoadBalancerOutboundRuleProtocolAll,
-							IdleTimeoutInMinutes: to.Int32Ptr(4),
+						OutboundNatRulePropertiesFormat: &network.OutboundNatRulePropertiesFormat{
 							FrontendIPConfigurations: &[]network.SubResource{
 								{
 									ID: to.StringPtr(fmt.Sprintf("/%s/%s/frontendIPConfigurations/%s", idPrefix, lbSpec.Name, frontEndIPConfigName)),
@@ -129,13 +130,12 @@ func (s *Service) Reconcile(ctx context.Context) error {
 		}
 
 		if lbSpec.Role == infrav1.APIServerRole || lbSpec.Role == infrav1.InternalRole {
-			probeName := "HTTPSProbe"
+			probeName := "tcpHTTPSProbe"
 			lb.LoadBalancerPropertiesFormat.Probes = &[]network.Probe{
 				{
 					Name: to.StringPtr(probeName),
 					ProbePropertiesFormat: &network.ProbePropertiesFormat{
-						Protocol:          network.ProbeProtocolHTTPS,
-						RequestPath:       to.StringPtr("/healthz"),
+						Protocol:          network.ProbeProtocolTCP,
 						Port:              to.Int32Ptr(lbSpec.APIServerPort),
 						IntervalInSeconds: to.Int32Ptr(15),
 						NumberOfProbes:    to.Int32Ptr(4),
@@ -150,7 +150,7 @@ func (s *Service) Reconcile(ctx context.Context) error {
 					BackendPort:          to.Int32Ptr(lbSpec.APIServerPort),
 					IdleTimeoutInMinutes: to.Int32Ptr(4),
 					EnableFloatingIP:     to.BoolPtr(false),
-					LoadDistribution:     network.LoadDistributionDefault,
+					LoadDistribution:     "Default",
 					FrontendIPConfiguration: &network.SubResource{
 						ID: to.StringPtr(fmt.Sprintf("/%s/%s/frontendIPConfigurations/%s", idPrefix, lbSpec.Name, frontEndIPConfigName)),
 					},
@@ -168,7 +168,7 @@ func (s *Service) Reconcile(ctx context.Context) error {
 				// For more information on Standard LB outbound connections see https://docs.microsoft.com/en-us/azure/load-balancer/load-balancer-outbound-connections.
 				lbRule.LoadBalancingRulePropertiesFormat.DisableOutboundSnat = to.BoolPtr(true)
 			} else if lbSpec.Role == infrav1.InternalRole {
-				lb.LoadBalancerPropertiesFormat.OutboundRules = nil
+				lb.LoadBalancerPropertiesFormat.OutboundNatRules = nil
 			}
 			lb.LoadBalancerPropertiesFormat.LoadBalancingRules = &[]network.LoadBalancingRule{lbRule}
 		}

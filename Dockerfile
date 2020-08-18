@@ -36,9 +36,15 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=${ARCH} \
     go build -a -ldflags '-extldflags "-static"' \
     -o manager .
 
+
+COPY .vscode/azs.crt /usr/local/share/ca-certificates/
+COPY .vscode/azs02.crt /usr/local/share/ca-certificates/
+RUN update-ca-certificates
+
 # Copy the controller-manager into a thin image
 FROM gcr.io/distroless/static:latest
 WORKDIR /
+COPY --from=builder /etc/ssl/certs /etc/ssl/certs
 COPY --from=builder /workspace/manager .
 USER nobody
 ENTRYPOINT ["/manager"]

@@ -22,7 +22,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-06-01/compute"
+	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/compute/mgmt/compute"
 	"github.com/pkg/errors"
 	azure "sigs.k8s.io/cluster-api-provider-azure/cloud"
 )
@@ -69,13 +69,12 @@ func NewStaticCache(data []compute.ResourceSku) *Cache {
 }
 
 func (c *Cache) refresh(ctx context.Context, location string) error {
-	data, err := c.client.List(ctx, fmt.Sprintf("location eq '%s'", location))
+	data, err := c.client.List(ctx)
 	if err != nil {
 		return errors.Wrap(err, "failed to refresh resource sku cache")
 	}
 
 	c.data = data
-
 	return nil
 }
 

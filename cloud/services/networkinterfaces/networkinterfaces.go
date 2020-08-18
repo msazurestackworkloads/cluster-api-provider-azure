@@ -20,12 +20,11 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-06-01/network"
+	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/network/mgmt/network"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/pkg/errors"
 	infrav1 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	azure "sigs.k8s.io/cluster-api-provider-azure/cloud"
-	"sigs.k8s.io/cluster-api-provider-azure/cloud/services/resourceskus"
 )
 
 // Reconcile gets/creates/updates a network interface.
@@ -88,16 +87,16 @@ func (s *Service) Reconcile(ctx context.Context) error {
 			nicConfig.PublicIPAddress = &publicIP
 		}
 
-		if nicSpec.AcceleratedNetworking == nil {
-			// set accelerated networking to the capability of the VMSize
-			sku, err := s.ResourceSKUCache.Get(ctx, nicSpec.VMSize, resourceskus.VirtualMachines)
-			if err != nil {
-				return errors.Wrapf(err, "failed to get find vm sku %s in compute api", nicSpec.VMSize)
-			}
+		// if nicSpec.AcceleratedNetworking == nil {
+		// 	// set accelerated networking to the capability of the VMSize
+		// 	sku, err := s.ResourceSKUCache.Get(ctx, nicSpec.VMSize, resourceskus.VirtualMachines)
+		// 	if err != nil {
+		// 		return errors.Wrapf(err, "failed to get find vm sku %s in compute api", nicSpec.VMSize)
+		// 	}
 
-			accelNet := sku.HasCapability(resourceskus.AcceleratedNetworking)
-			nicSpec.AcceleratedNetworking = &accelNet
-		}
+		// 	accelNet := sku.HasCapability(resourceskus.AcceleratedNetworking)
+		// 	nicSpec.AcceleratedNetworking = &accelNet
+		// }
 
 		err = s.Client.CreateOrUpdate(ctx,
 			s.Scope.ResourceGroup(),

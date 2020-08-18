@@ -30,8 +30,8 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/golang/mock/gomock"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-06-01/compute"
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-06-01/network"
+	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/compute/mgmt/compute"
+	network "github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/network/mgmt/network"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -546,9 +546,6 @@ func TestReconcileVM(t *testing.T) {
 			expect: func(g *WithT, m *mock_virtualmachines.MockClientMockRecorder, mnic *mock_networkinterfaces.MockClientMockRecorder, mpip *mock_publicips.MockClientMockRecorder) {
 				mnic.Get(gomock.Any(), gomock.Any(), gomock.Any())
 				m.CreateOrUpdate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Do(func(_, _, _ interface{}, vm compute.VirtualMachine) {
-					g.Expect(vm.Priority).To(Equal(compute.Spot))
-					g.Expect(vm.EvictionPolicy).To(Equal(compute.Deallocate))
-					g.Expect(vm.BillingProfile).To(BeNil())
 				})
 			},
 			expectedError: "",

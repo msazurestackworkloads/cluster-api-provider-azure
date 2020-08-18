@@ -20,7 +20,6 @@ import (
 	"encoding/base64"
 	"fmt"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-06-01/compute"
 	"golang.org/x/crypto/ssh"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 )
@@ -110,7 +109,7 @@ func ValidateOSDisk(osDisk OSDisk, fieldPath *field.Path) field.ErrorList {
 		allErrs = append(allErrs, err)
 	}
 
-	if osDisk.DiffDiskSettings != nil && osDisk.DiffDiskSettings.Option == string(compute.Local) && osDisk.ManagedDisk.StorageAccountType != "Standard_LRS" {
+	if osDisk.DiffDiskSettings != nil && osDisk.DiffDiskSettings.Option == "Local" && osDisk.ManagedDisk.StorageAccountType != "Standard_LRS" {
 		allErrs = append(allErrs, field.Invalid(
 			fieldPath.Child("managedDisks").Child("storageAccountType"),
 			osDisk.ManagedDisk.StorageAccountType,
@@ -134,7 +133,7 @@ func ValidateManagedDisk(old, new ManagedDisk, fieldPath *field.Path) field.Erro
 
 func validateDiffDiskSetings(d *DiffDiskSettings, fldPath *field.Path) *field.Error {
 	if d != nil {
-		if d.Option != string(compute.Local) {
+		if d.Option != "Local" {
 			return field.Invalid(
 				fldPath.Child("option"),
 				d,
@@ -184,11 +183,12 @@ func validateStorageAccountType(storageAccountType string, fieldPath *field.Path
 		return allErrs
 	}
 
-	for _, possibleStorageAccountType := range compute.PossibleDiskStorageAccountTypesValues() {
+	possibleDiskStorageAccountTypesValues := []string{"Premium_LRS", "Standard_LRS"}
+	for _, possibleStorageAccountType := range possibleDiskStorageAccountTypesValues {
 		if string(possibleStorageAccountType) == storageAccountType {
 			return allErrs
 		}
 	}
-	allErrs = append(allErrs, field.Invalid(storageAccTypeChildPath, "", fmt.Sprintf("allowed values are %v", compute.PossibleDiskStorageAccountTypesValues())))
+	allErrs = append(allErrs, field.Invalid(storageAccTypeChildPath, "", fmt.Sprintf("allowed values are %v", possibleDiskStorageAccountTypesValues)))
 	return allErrs
 }

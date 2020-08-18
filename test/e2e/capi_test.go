@@ -79,17 +79,17 @@ var _ = Describe("Running the Cluster API E2E tests", func() {
 	//	})
 	//})
 
-	Context("Running the MachineDeployment upgrade spec", func() {
-		capi_e2e.MachineDeploymentUpgradesSpec(context.TODO(), func() capi_e2e.MachineDeploymentUpgradesSpecInput {
-			return capi_e2e.MachineDeploymentUpgradesSpecInput{
-				E2EConfig:             e2eConfig,
-				ClusterctlConfigPath:  clusterctlConfigPath,
-				BootstrapClusterProxy: bootstrapClusterProxy,
-				ArtifactFolder:        artifactFolder,
-				SkipCleanup:           skipCleanup,
-			}
-		})
-	})
+	// Context("Running the MachineDeployment upgrade spec", func() {
+	// 	capi_e2e.MachineDeploymentUpgradesSpec(context.TODO(), func() capi_e2e.MachineDeploymentUpgradesSpecInput {
+	// 		return capi_e2e.MachineDeploymentUpgradesSpecInput{
+	// 			E2EConfig:             e2eConfig,
+	// 			ClusterctlConfigPath:  clusterctlConfigPath,
+	// 			BootstrapClusterProxy: bootstrapClusterProxy,
+	// 			ArtifactFolder:        artifactFolder,
+	// 			SkipCleanup:           skipCleanup,
+	// 		}
+	// 	})
+	// })
 
 	// TODO: fix and enable
 	// Context("Running the self-hosted spec", func() {

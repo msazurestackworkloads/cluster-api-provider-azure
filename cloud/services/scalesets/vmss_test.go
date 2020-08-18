@@ -22,8 +22,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-06-01/compute"
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-06-01/network"
+	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/compute/mgmt/compute"
+	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/network/mgmt/network"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/golang/mock/gomock"
@@ -325,7 +325,7 @@ func TestService_Reconcile(t *testing.T) {
 				lbMock := mock_loadbalancers.NewMockClient(mockCtrl)
 				svc.LoadBalancersClient = lbMock
 
-				storageProfile, err := svc.generateStorageProfile(ctx, *spec, resourceskus.SKU(skus[0]))
+				storageProfile, err := svc.generateStorageProfile(ctx, *spec)
 				g.Expect(err).ToNot(gomega.HaveOccurred())
 
 				vmss := compute.VirtualMachineScaleSet{
@@ -343,7 +343,7 @@ func TestService_Reconcile(t *testing.T) {
 					},
 					VirtualMachineScaleSetProperties: &compute.VirtualMachineScaleSetProperties{
 						UpgradePolicy: &compute.UpgradePolicy{
-							Mode: compute.UpgradeModeManual,
+							Mode: "Manual",
 						},
 						VirtualMachineProfile: &compute.VirtualMachineScaleSetVMProfile{
 							OsProfile: &compute.VirtualMachineScaleSetOSProfile{
@@ -460,7 +460,7 @@ func TestService_Reconcile(t *testing.T) {
 				lbMock := mock_loadbalancers.NewMockClient(mockCtrl)
 				svc.LoadBalancersClient = lbMock
 
-				storageProfile, err := svc.generateStorageProfile(ctx, *spec, resourceskus.SKU(skus[0]))
+				storageProfile, err := svc.generateStorageProfile(ctx, *spec)
 				g.Expect(err).ToNot(gomega.HaveOccurred())
 
 				vmss := compute.VirtualMachineScaleSet{
@@ -478,7 +478,7 @@ func TestService_Reconcile(t *testing.T) {
 					},
 					VirtualMachineScaleSetProperties: &compute.VirtualMachineScaleSetProperties{
 						UpgradePolicy: &compute.UpgradePolicy{
-							Mode: compute.UpgradeModeManual,
+							Mode: "Manual",
 						},
 						VirtualMachineProfile: &compute.VirtualMachineScaleSetVMProfile{
 							OsProfile: &compute.VirtualMachineScaleSetOSProfile{
@@ -596,7 +596,7 @@ func TestService_Reconcile(t *testing.T) {
 				lbMock := mock_loadbalancers.NewMockClient(mockCtrl)
 				svc.LoadBalancersClient = lbMock
 
-				storageProfile, err := svc.generateStorageProfile(ctx, *spec, resourceskus.SKU(skus[0]))
+				storageProfile, err := svc.generateStorageProfile(ctx, *spec)
 				g.Expect(err).ToNot(gomega.HaveOccurred())
 
 				vmss := compute.VirtualMachineScaleSet{
@@ -614,7 +614,7 @@ func TestService_Reconcile(t *testing.T) {
 					},
 					VirtualMachineScaleSetProperties: &compute.VirtualMachineScaleSetProperties{
 						UpgradePolicy: &compute.UpgradePolicy{
-							Mode: compute.UpgradeModeManual,
+							Mode: "Manual",
 						},
 						VirtualMachineProfile: &compute.VirtualMachineScaleSetVMProfile{
 							OsProfile: &compute.VirtualMachineScaleSetOSProfile{
@@ -677,7 +677,7 @@ func TestService_Reconcile(t *testing.T) {
 					},
 					VirtualMachineScaleSetUpdateProperties: &compute.VirtualMachineScaleSetUpdateProperties{
 						UpgradePolicy: &compute.UpgradePolicy{
-							Mode: compute.UpgradeModeManual,
+							Mode: "Manual",
 						},
 						VirtualMachineProfile: &compute.VirtualMachineScaleSetUpdateVMProfile{
 							OsProfile: &compute.VirtualMachineScaleSetUpdateOSProfile{
@@ -697,7 +697,7 @@ func TestService_Reconcile(t *testing.T) {
 							StorageProfile: &compute.VirtualMachineScaleSetUpdateStorageProfile{
 								ImageReference: &compute.ImageReference{ID: to.StringPtr("image")},
 								OsDisk: &compute.VirtualMachineScaleSetUpdateOSDisk{
-									DiskSizeGB:  to.Int32Ptr(120),
+									// DiskSizeGB:  to.Int32Ptr(120),
 									ManagedDisk: &compute.VirtualMachineScaleSetManagedDiskParameters{StorageAccountType: "accountType"},
 								},
 								DataDisks: &[]compute.VirtualMachineScaleSetDataDisk{
@@ -849,7 +849,7 @@ func TestGetVMSSUpdateFromVMSS(t *testing.T) {
 		},
 		VirtualMachineScaleSetProperties: &compute.VirtualMachineScaleSetProperties{
 			UpgradePolicy: &compute.UpgradePolicy{
-				Mode: compute.UpgradeModeManual,
+				Mode: "Manual",
 			},
 			VirtualMachineProfile: &compute.VirtualMachineScaleSetVMProfile{
 				OsProfile: &compute.VirtualMachineScaleSetOSProfile{
@@ -881,7 +881,7 @@ func TestGetVMSSUpdateFromVMSS(t *testing.T) {
 		},
 		VirtualMachineScaleSetUpdateProperties: &compute.VirtualMachineScaleSetUpdateProperties{
 			UpgradePolicy: &compute.UpgradePolicy{
-				Mode: compute.UpgradeModeManual,
+				Mode: "Manual",
 			},
 			VirtualMachineProfile: &compute.VirtualMachineScaleSetUpdateVMProfile{
 				OsProfile: &compute.VirtualMachineScaleSetUpdateOSProfile{

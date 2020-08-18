@@ -13,3 +13,4 @@
 !/main.go
 !/go.mod
 !/go.sum
+!/.vscode/**

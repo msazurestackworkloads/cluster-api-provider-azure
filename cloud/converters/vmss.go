@@ -17,7 +17,7 @@ limitations under the License.
 package converters
 
 import (
-	"github.com/Azure/azure-sdk-for-go/profiles/latest/compute/mgmt/compute"
+	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/compute/mgmt/compute"
 	"github.com/Azure/go-autorest/autorest/to"
 
 	infrav1 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
@@ -37,9 +37,11 @@ func SDKToVMSS(sdkvmss compute.VirtualMachineScaleSet, sdkinstances []compute.Vi
 		vmss.Capacity = to.Int64(sdkvmss.Sku.Capacity)
 	}
 
-	if sdkvmss.Zones != nil && len(*sdkvmss.Zones) > 0 {
-		vmss.Zones = to.StringSlice(sdkvmss.Zones)
-	}
+	/*
+		if sdkvmss.Zones != nil && len(*sdkvmss.Zones) > 0 {
+			vmss.Zones = to.StringSlice(sdkvmss.Zones)
+		}
+	*/
 
 	if len(sdkvmss.Tags) > 0 {
 		vmss.Tags = MapToTags(sdkvmss.Tags)
@@ -55,9 +57,11 @@ func SDKToVMSS(sdkvmss compute.VirtualMachineScaleSet, sdkinstances []compute.Vi
 				State:      infrav1.VMState(to.String(vm.ProvisioningState)),
 			}
 
-			if vm.Zones != nil && len(*vm.Zones) > 0 {
-				instance.AvailabilityZone = to.StringSlice(vm.Zones)[0]
-			}
+			/*
+				if vm.Zones != nil && len(*vm.Zones) > 0 {
+					instance.AvailabilityZone = to.StringSlice(vm.Zones)[0]
+				}
+			*/
 			vmss.Instances[i] = instance
 		}
 	}

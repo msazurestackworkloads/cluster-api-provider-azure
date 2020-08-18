@@ -19,10 +19,9 @@ package virtualmachines
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-06-01/compute"
+	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/compute/mgmt/compute"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
@@ -108,10 +107,12 @@ func (s *Service) Reconcile(ctx context.Context, spec interface{}) error {
 	// Set the cloud provider tag
 	additionalTags[infrav1.ClusterAzureCloudProviderTagKey(s.MachineScope.Name())] = string(infrav1.ResourceLifecycleOwned)
 
-	priority, evictionPolicy, billingProfile, err := getSpotVMOptions(vmSpec.SpotVMOptions)
-	if err != nil {
-		return errors.Wrapf(err, "failed to get Spot VM options")
-	}
+	/*
+		priority, evictionPolicy, billingProfile, err := getSpotVMOptions(vmSpec.SpotVMOptions)
+		if err != nil {
+			return errors.Wrapf(err, "failed to get Spot VM options")
+		}
+	*/
 
 	virtualMachine := compute.VirtualMachine{
 		Location: to.StringPtr(s.Scope.Location()),
@@ -146,9 +147,6 @@ func (s *Service) Reconcile(ctx context.Context, spec interface{}) error {
 			NetworkProfile: &compute.NetworkProfile{
 				NetworkInterfaces: &nicRefs,
 			},
-			Priority:       priority,
-			EvictionPolicy: evictionPolicy,
-			BillingProfile: billingProfile,
 		},
 	}
 
@@ -170,18 +168,32 @@ func (s *Service) Reconcile(ctx context.Context, spec interface{}) error {
 		// UserAssignedIdentities - The list of user identities associated with the Virtual Machine.
 		// The user identity dictionary key references will be ARM resource ids in the form:
 		// '/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/{identityName}'.
-		userIdentitiesMap := make(map[string]*compute.VirtualMachineIdentityUserAssignedIdentitiesValue, len(vmSpec.UserAssignedIdentities))
+		userIdentities := make([]string, len(vmSpec.UserAssignedIdentities))
 		for _, id := range vmSpec.UserAssignedIdentities {
 			key := id.ProviderID
 			if strings.HasPrefix(id.ProviderID, "azure:///") {
 				key = strings.TrimPrefix(key, "azure:///")
 			}
-			userIdentitiesMap[key] = &compute.VirtualMachineIdentityUserAssignedIdentitiesValue{}
+			userIdentities = append(userIdentities, key)
 		}
 		virtualMachine.Identity = &compute.VirtualMachineIdentity{
-			Type:                   compute.ResourceIdentityTypeUserAssigned,
-			UserAssignedIdentities: userIdentitiesMap,
+			Type:        compute.ResourceIdentityTypeUserAssigned,
+			IdentityIds: &userIdentities,
 		}
+		/*
+			userIdentitiesMap := make(map[string]*compute.VirtualMachineIdentityUserAssignedIdentitiesValue, len(vmSpec.UserAssignedIdentities))
+			for _, id := range vmSpec.UserAssignedIdentities {
+				key := id.ProviderID
+				if strings.HasPrefix(id.ProviderID, "azure:///") {
+					key = strings.TrimPrefix(key, "azure:///")
+				}
+				userIdentitiesMap[key] = &compute.VirtualMachineIdentityUserAssignedIdentitiesValue{}
+			}
+			virtualMachine.Identity = &compute.VirtualMachineIdentity{
+				Type:                   compute.ResourceIdentityTypeUserAssigned,
+				UserAssignedIdentities: userIdentitiesMap,
+			}
+		*/
 	}
 
 	err = s.Client.CreateOrUpdate(
@@ -317,9 +329,9 @@ func (s *Service) generateStorageProfile(ctx context.Context, vmSpec Spec) (*com
 			return nil, fmt.Errorf("vm size %s does not support ephemeral os. select a different vm size or disable ephemeral os", vmSpec.Size)
 		}
 
-		storageProfile.OsDisk.DiffDiskSettings = &compute.DiffDiskSettings{
-			Option: compute.DiffDiskOptions(vmSpec.OSDisk.DiffDiskSettings.Option),
-		}
+		// storageProfile.OsDisk.DiffDiskSettings = &compute.DiffDiskSettings{
+		// 	Option: compute.DiffDiskOptions(vmSpec.OSDisk.DiffDiskSettings.Option),
+		// }
 	}
 
 	dataDisks := []compute.DataDisk{}
@@ -343,6 +355,7 @@ func (s *Service) generateStorageProfile(ctx context.Context, vmSpec Spec) (*com
 	return storageProfile, nil
 }
 
+/*
 func getSpotVMOptions(spotVMOptions *infrav1.SpotVMOptions) (compute.VirtualMachinePriorityTypes, compute.VirtualMachineEvictionPolicyTypes, *compute.BillingProfile, error) {
 	// Spot VM not requested, return zero values to apply defaults
 	if spotVMOptions == nil {
@@ -360,3 +373,4 @@ func getSpotVMOptions(spotVMOptions *infrav1.SpotVMOptions) (compute.VirtualMach
 	}
 	return compute.Spot, compute.Deallocate, billingProfile, nil
 }
+*/

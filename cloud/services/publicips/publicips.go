@@ -20,7 +20,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-06-01/network"
+	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/network/mgmt/network"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/pkg/errors"
 	azure "sigs.k8s.io/cluster-api-provider-azure/cloud"
@@ -35,7 +35,7 @@ func (s *Service) Reconcile(ctx context.Context) error {
 			s.Scope.ResourceGroup(),
 			ip.Name,
 			network.PublicIPAddress{
-				Sku:      &network.PublicIPAddressSku{Name: network.PublicIPAddressSkuNameStandard},
+				Sku:      &network.PublicIPAddressSku{Name: network.PublicIPAddressSkuNameBasic},
 				Name:     to.StringPtr(ip.Name),
 				Location: to.StringPtr(s.Scope.Location()),
 				PublicIPAddressPropertiesFormat: &network.PublicIPAddressPropertiesFormat{

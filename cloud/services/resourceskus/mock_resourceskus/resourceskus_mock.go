@@ -22,9 +22,10 @@ package mock_resourceskus
 
 import (
 	context "context"
-	compute "github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-06-01/compute"
-	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
+
+	compute "github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/compute/mgmt/compute"
+	gomock "github.com/golang/mock/gomock"
 )
 
 // MockClient is a mock of Client interface.
@@ -51,9 +52,9 @@ func (m *MockClient) EXPECT() *MockClientMockRecorder {
 }
 
 // List mocks base method.
-func (m *MockClient) List(arg0 context.Context, arg1 string) ([]compute.ResourceSku, error) {
+func (m *MockClient) List(arg0 context.Context) ([]compute.ResourceSku, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "List", arg0, arg1)
+	ret := m.ctrl.Call(m, "List", arg0)
 	ret0, _ := ret[0].([]compute.ResourceSku)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
