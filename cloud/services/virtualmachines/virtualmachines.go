@@ -19,7 +19,6 @@ package virtualmachines
 import (
 	"context"
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/compute/mgmt/compute"
@@ -197,17 +196,14 @@ func (s *Service) Reconcile(ctx context.Context, spec interface{}) error {
 		*/
 	}
 
-	log.Println("CREATING VM: ", vmSpec.Name)
 	err = s.Client.CreateOrUpdate(
 		ctx,
 		s.Scope.ResourceGroup(),
 		vmSpec.Name,
 		virtualMachine)
 	if err != nil {
-		log.Println("CREATING VM ERROR: ", vmSpec.Name)
 		return errors.Wrapf(err, "cannot create VM")
 	}
-	log.Println("CREATING VM FINISHED: ", vmSpec.Name)
 
 	s.Scope.V(2).Info("successfully created VM", "vm", vmSpec.Name)
 	return nil
